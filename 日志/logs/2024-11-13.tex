@@ -3,7 +3,9 @@
 \subsection{今日进展} % 今日进展
 今天了解了作业的具体要求，了解了使用C++实现五子棋对弈程序所需要的算法基础，即Min-Max算法和Alpha-Bata剪枝优化。
 然后在GitHub上创建了仓库，方便后续的版本控制和更新。并使用GPT生成了latex模板方便后续开发日志的记录。
-同时今天找到了一些宝贵的学习参考资源，比如GitHub上基于Javascript语言的五子棋AI教程\url{https://github.com/lihongxun945/gobang?tab=readme-ov-file}和
+同时今天找到了一些宝贵的学习参考资源，比如GitHub上基于Javascript语言的五子棋AI教程\url{https://github.com/lihongxun945/gobang?tab=readme-ov-file}
+和bilibili上的算法教程视频\url{https://www.bilibili.com/video/BV1v94y1r7F8/?spm_id_from=333.880.my_history.page.click&vd_source=2f0075ad419feeef529bb2dce0adc975}。
+
 
 \subsection{本次作业的基本要求} 
 
@@ -44,25 +46,12 @@ Min-Max算法：
 
 而每一个节点的分数，都是由子节点决定的，因此我们对博弈树只能进行深度优先搜索而无法进行广度优先搜索。深度优先搜索用递归非常容易实现，然后主要工作其实是完成一个评估函数，这个函数需要对当前局势给出一个比较准确的评分。
 
+alpha-beta剪枝：
+即每次更新节点的数值时，查看其是否被父节点所兼容：如果父节点已经得到了合理的结果，就可以通过break语句进行剪枝。
 
-
-
-\subsubsection{遇到的问题}
-在实现棋子下放功能时，点击事件无法正确获取鼠标位置，导致棋子无法准确放置。
-
-\subsubsection{解决方法}
-通过调整事件处理函数，使用相对坐标系计算鼠标点击位置，并将其映射到棋盘格子上，实现了准确放置棋子的功能。
-
-\subsection{代码分析} % 代码分析
-
-\subsubsection{核心算法}
-
-
-\subsubsection{代码解释}
-上述代码实现了五子棋的胜利条件检测，包括横向、纵向以及两种斜向的五子连线检查。
 
 \subsection{明日计划} % 明日计划
-计划实现AI对战功能，优化胜利条件检测算法，并进行界面美化。
+编写一些基本的函数，实现输入与输出的读取。
 
 \subsection{后续待实现的内容} % 心得体会
 
