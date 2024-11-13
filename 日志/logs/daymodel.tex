@@ -1,0 +1,64 @@
+\section{2024年4月27日} % 日期作为章节显示在目录中
+
+\subsection{今日进展} % 今日进展
+今天完成了五子棋的基本棋盘绘制，并实现了棋子的下放功能。
+
+\subsection{成果展示} % 成果展示
+
+\subsubsection{程序界面截图}
+\begin{figure}[h]
+    \centering
+    % \includegraphics[width=0.7\textwidth]{images/screenshot_0427.png} % 插入图片，确保文件存在
+    % 如果没有图片，可以使用以下占位图
+    \fbox{\parbox[b][5cm][c]{0.7\textwidth}{\centering 程序界面截图（2024年4月27日）占位图}}
+    \caption{程序界面截图（2024年4月27日）}
+    \label{fig:screenshot_0427}
+\end{figure}
+
+\subsubsection{运行结果}
+程序成功运行，能够显示棋盘并响应玩家的点击操作。
+
+\subsection{问题与解决方案} % 问题与解决方案
+
+\subsubsection{遇到的问题}
+在实现棋子下放功能时，点击事件无法正确获取鼠标位置，导致棋子无法准确放置。
+
+\subsubsection{解决方法}
+通过调整事件处理函数，使用相对坐标系计算鼠标点击位置，并将其映射到棋盘格子上，实现了准确放置棋子的功能。
+
+\subsection{代码分析} % 代码分析
+
+\subsubsection{核心算法}
+\begin{lstlisting}[caption={五子棋算法核心代码（2024年4月27日）}, label={code:core_0427}]
+def check_win(board, player):
+    # 检查横向是否连成五子
+    for i in range(len(board)):
+        for j in range(len(board[i]) - 4):
+            if all(board[i][j+k] == player for k in range(5)):
+                return True
+    # 检查纵向是否连成五子
+    for i in range(len(board) - 4):
+        for j in range(len(board[i])):
+            if all(board[i+k][j] == player for k in range(5)):
+                return True
+    # 检查斜向（左上到右下）是否连成五子
+    for i in range(len(board) - 4):
+        for j in range(len(board[i]) - 4):
+            if all(board[i+k][j+k] == player for k in range(5)):
+                return True
+    # 检查斜向（右上到左下）是否连成五子
+    for i in range(len(board) - 4):
+        for j in range(4, len(board[i])):
+            if all(board[i+k][j-k] == player for k in range(5)):
+                return True
+    return False
+\end{lstlisting}
+
+\subsubsection{代码解释}
+上述代码实现了五子棋的胜利条件检测，包括横向、纵向以及两种斜向的五子连线检查。
+
+\subsection{明日计划} % 明日计划
+计划实现AI对战功能，优化胜利条件检测算法，并进行界面美化。
+
+\subsection{心得体会} % 心得体会
+通过今天的开发，深入理解了事件处理和坐标转换的实现方法，对Python的GUI编程有了更深入的认识。

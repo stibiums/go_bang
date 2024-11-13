@@ -1,0 +1,79 @@
+% 导言区：设置文档类型和加载需要的宏包
+\documentclass[12pt,a4paper]{article} % 使用 article 文档类，字号12pt，纸张A4
+
+% 中文支持
+\usepackage[UTF8]{ctex} % 支持中文，编码为 UTF8
+
+% 页面布局设置
+\usepackage{geometry} % 控制页面尺寸
+\geometry{left=2.5cm, right=2.5cm, top=2.5cm, bottom=2.5cm} % 设置页边距
+
+% 插入图片
+\usepackage{graphicx} % 支持插入图片
+\usepackage{subcaption} % 支持子图
+
+% 代码高亮
+\usepackage{listings} % 插入代码
+\usepackage{xcolor} % 定义颜色
+
+% 设置代码样式
+\lstset{
+    language=C++, % 设置代码语言为 C++
+    basicstyle=\ttfamily\small, % 基本字体样式
+    keywordstyle=\color{blue}, % 关键词颜色
+    commentstyle=\color{gray}, % 注释颜色
+    stringstyle=\color{red}, % 字符串颜色
+    breaklines=true, % 自动换行
+    numbers=left, % 行号位置
+    numberstyle=\tiny\color{gray}, % 行号样式
+    frame=single, % 代码框
+    captionpos=b % 标题位置
+}
+
+
+% 超链接支持
+\usepackage[colorlinks, linkcolor=blue,urlcolor=blue]{hyperref} % 设置超链接样式
+
+% 其他常用宏包
+\usepackage{amsmath} % 数学公式
+\usepackage{amssymb} % 数学符号
+\usepackage{booktabs} % 三线表
+\usepackage{multirow} % 合并单元格
+\usepackage{url} % 支持 \url 命令
+
+% 开始文档
+\begin{document}
+
+% 封面部分
+\begin{titlepage}
+    \centering
+    \vspace*{\fill}
+    {\Huge \textbf{五子棋程序开发日志}}\\[2cm] % 标题
+    {\Large 作者：刘继轩}\\[1cm] % 作者信息
+    {\Large 2400017722}\\[1cm] % 
+    {最后修改日期：\today}\\[2cm] % 当前日期，自动生成
+    \vspace*{\fill}
+\end{titlepage}
+
+% 目录
+\tableofcontents % 自动生成目录
+\newpage
+
+% 日志正文
+% 使用 \include 命令引用每日日志文件
+% \include 命令会在引用的文件前后自动插入分页符
+% 如果不需要分页符，可以使用 \input 命令
+
+% 示例引用两日日志
+\include{logs/2024-11-13} % 引用 日志
+
+
+% 如果日志内容较多，可以继续添加 \include 命令引用更多日志文件
+
+% 参考文献
+\begin{thebibliography}{9} % 参考文献列表
+\bibitem{ref1} 作者, \textit{书名}, 出版社, 出版年份.
+\bibitem{ref2} 在线资源标题, \url{https://example.com}
+\end{thebibliography}
+
+\end{document}
