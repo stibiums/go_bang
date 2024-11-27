@@ -1,0 +1,28 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Build All Files",
+            "type": "shell",
+            "command": "g++",
+            "args": [
+                "main.cpp",
+                "board.cpp",
+                "law.cpp",
+                "-o",
+                "main.exe"
+            ],
+            "options": {
+                "cwd": "D:/24 autumn/computerscience/work/code"
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "detail": "Task for building the project with correct working directory"
+        }
+    ]
+}

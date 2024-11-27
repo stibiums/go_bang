@@ -2,6 +2,7 @@
 #include<vector>
 #include <windows.h>
 #include "board.hpp"
+#include "law.hpp"
 
 int main(void)
 {
@@ -33,8 +34,16 @@ int main(void)
 
             // 更新棋盘显示
             
-            board[x][y] = (current_Player==1)?'●':'○'; // 模拟落子
+            board[x][y] = (current_Player==1)?'X':'O'; // 模拟落子
             displayBoard(board);
+
+            if(checkwin(board,x,y,current_Player))
+            {
+                cout<<"玩家"<<current_Player<<"获胜"<<endl;
+                pauseBeforeUpdate();
+                break;
+            }
+
             current_Player=(current_Player==1)?0:1;
         } 
         else {
