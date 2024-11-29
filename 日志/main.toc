@@ -18,3 +18,16 @@
 \contentsline {subsubsection}{\numberline {2.4.1}棋盘初始化与显示}{5}{subsubsection.2.4.1}%
 \contentsline {subsubsection}{\numberline {2.4.2}胜负判断核心代码}{5}{subsubsection.2.4.2}%
 \contentsline {subsection}{\numberline {2.5}明日计划}{6}{subsection.2.5}%
+\contentsline {section}{\numberline {3}2024年11月29日}{7}{section.3}%
+\contentsline {subsection}{\numberline {3.1}今日进展}{7}{subsection.3.1}%
+\contentsline {subsection}{\numberline {3.2}成果展示}{7}{subsection.3.2}%
+\contentsline {subsubsection}{\numberline {3.2.1}程序界面截图}{7}{subsubsection.3.2.1}%
+\contentsline {subsubsection}{\numberline {3.2.2}运行结果}{7}{subsubsection.3.2.2}%
+\contentsline {subsection}{\numberline {3.3}问题与解决方案}{8}{subsection.3.3}%
+\contentsline {subsubsection}{\numberline {3.3.1}遇到的问题}{8}{subsubsection.3.3.1}%
+\contentsline {subsubsection}{\numberline {3.3.2}解决方法}{8}{subsubsection.3.3.2}%
+\contentsline {subsection}{\numberline {3.4}代码分析}{8}{subsection.3.4}%
+\contentsline {subsubsection}{\numberline {3.4.1}禁手规则检测代码}{8}{subsubsection.3.4.1}%
+\contentsline {subsubsection}{\numberline {3.4.2}菜单功能代码}{10}{subsubsection.3.4.2}%
+\contentsline {subsubsection}{\numberline {3.4.3}输入函数代码}{11}{subsubsection.3.4.3}%
+\contentsline {subsection}{\numberline {3.5}明日计划}{11}{subsection.3.5}%
