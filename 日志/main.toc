@@ -28,6 +28,6 @@
 \contentsline {subsubsection}{\numberline {3.3.2}解决方法}{8}{subsubsection.3.3.2}%
 \contentsline {subsection}{\numberline {3.4}代码分析}{8}{subsection.3.4}%
 \contentsline {subsubsection}{\numberline {3.4.1}禁手规则检测代码}{8}{subsubsection.3.4.1}%
-\contentsline {subsubsection}{\numberline {3.4.2}菜单功能代码}{10}{subsubsection.3.4.2}%
+\contentsline {subsubsection}{\numberline {3.4.2}菜单功能代码}{9}{subsubsection.3.4.2}%
 \contentsline {subsubsection}{\numberline {3.4.3}输入函数代码}{11}{subsubsection.3.4.3}%
 \contentsline {subsection}{\numberline {3.5}明日计划}{11}{subsection.3.5}%
