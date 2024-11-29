@@ -1,4 +1,5 @@
 #include "board.hpp"
+#include "law.hpp"
 #include<iostream>
 #include<vector>
 
@@ -33,6 +34,53 @@ void displayBoard(const vector<vector<char>>& board)
         cout << endl;
     }
 }
+
+// 输入函数
+pair<int,int> Inputfunction(const vector<vector<char>>& board,bool currentPlayerType)
+{
+    if(currentPlayerType)
+    {
+        cout<<"ai进行输入"<<endl;
+        return aiInput(board);
+    }
+    else
+    {
+        cout<<"人类进行输入"<<endl;
+        return humanInput();
+    }
+}
+
+// 当前玩家是人类时，获取输入的函数(暂时为玩家输入坐标)
+pair<int,int> humanInput()
+{
+    int x,y;
+    cout << "请输入落子位置 (行 列): ";
+    cin >> x >> y;
+    return {x,y};
+}
+
+// 当前玩家是AI时，获取输入的函数(暂时为一个随机输入函数)
+#include <cstdlib>
+#include <ctime>
+
+pair<int, int> aiInput(const vector<vector<char>>& board) 
+{
+    srand(time(0)); // 随机数种子
+    int n = board.size();
+
+    while (true) {
+        int x = rand() % n;
+        int y = rand() % n;
+
+        if (board[x][y] == ' '&&!isForbiddenMove(board, x, y))
+        { // 确保选择空格位置
+            cout << "AI 选择位置: (" << x << ", " << y << ")" << endl;
+            return {x, y};
+        }
+    }
+}
+
+
 
 // 判断输入是否合法
 bool isValidMove(const vector<vector<char>>& board, int x, int y) 

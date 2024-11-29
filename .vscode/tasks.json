@@ -9,6 +9,7 @@
                 "main.cpp",
                 "board.cpp",
                 "law.cpp",
+                "menu.cpp",
                 "-o",
                 "main.exe"
             ],

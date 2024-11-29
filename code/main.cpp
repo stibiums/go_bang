@@ -3,10 +3,19 @@
 #include <windows.h>
 #include "board.hpp"
 #include "law.hpp"
+#include "menu.hpp"
 
 int main(void)
 {
     SetConsoleOutputCP(65001); // 设置控制台输出为 UTF-8,防止输出出现乱码
+
+
+    bool PlayerType[2]={false,false}; // 记录玩家的类型
+
+    while(true)
+    {
+        
+    displayMenu(PlayerType[1],PlayerType[0]);
 
     int Board_size;
     cout<<"请先输入棋盘的大小:"<<endl;
@@ -23,10 +32,15 @@ int main(void)
 
     // 测试输入合法性
     int x, y;
+    
 
-    while (true) {
-        cout << "请输入落子位置 (行 列): ";
-        cin >> x >> y;
+    while (true) 
+    {
+        bool currentPlaytType = PlayerType[current_Player]; // 当前落子玩家的类型，暂时设定为false(代表人类玩家)
+
+        pair<int,int> input=Inputfunction(board,currentPlaytType);
+        x=input.first;  
+        y=input.second;  
 
         if (isValidMove(board, x, y)) 
         {
@@ -37,12 +51,31 @@ int main(void)
             board[x][y] = (current_Player==1)?'X':'O'; // 模拟落子
             displayBoard(board);
 
+            if(current_Player==1&&isForbiddenMove(board,x,y))
+            {
+                cout<<"玩家"<<current_Player-1<<"获胜"<<endl;
+                
+                pauseBeforeUpdate();
+                break;
+            }
+
+            // 先检查是否已经有人获胜，再检查是否已经平局
+
             if(checkwin(board,x,y,current_Player))
             {
                 cout<<"玩家"<<current_Player<<"获胜"<<endl;
                 pauseBeforeUpdate();
                 break;
             }
+
+            if(isBoardFull(board))
+            {
+                cout<<"棋盘已满，平局"<<endl;
+                pauseBeforeUpdate();
+                break;
+            }
+
+
 
             current_Player=(current_Player==1)?0:1;
         } 
@@ -51,6 +84,8 @@ int main(void)
         }
 
         
+    }
+
     }
 
     return 0;
