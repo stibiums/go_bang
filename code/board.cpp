@@ -5,14 +5,16 @@
 
 using namespace std;
 
+char item[3]={'O',' ','X'};
+
 // 根据输入的棋盘大小设定合适的二维数组保存棋盘数据
-vector<vector<char>> initializeBoard(int size)
+vector<vector<int>> initializeBoard(int size)
 {
-    return vector<vector<char>>(size,vector<char>(size,' '));
+    return vector<vector<int>>(size,vector<int>(size,0));
 }
 
 // 显示棋盘
-void displayBoard(const vector<vector<char>>& board)
+void displayBoard(const vector<vector<int>>& board)
 {
     system("cls"); // 清屏
 
@@ -29,14 +31,14 @@ void displayBoard(const vector<vector<char>>& board)
     {
         cout << i << "\t"; // 行编号
         for (int j = 0; j < board[i].size(); ++j) {
-            cout << board[i][j] << "\t"; // 棋盘格子内容
+            cout << item[board[i][j]+1] << "\t"; // 棋盘格子内容
         }
         cout << endl;
     }
 }
 
 // 输入函数
-pair<int,int> Inputfunction(const vector<vector<char>>& board,bool currentPlayerType)
+pair<int,int> Inputfunction(const vector<vector<int>>& board,bool currentPlayerType)
 {
     if(currentPlayerType)
     {
@@ -63,7 +65,7 @@ pair<int,int> humanInput()
 #include <cstdlib>
 #include <ctime>
 
-pair<int, int> aiInput(const vector<vector<char>>& board) 
+pair<int, int> aiInput(const vector<vector<int>>& board) 
 {
     srand(time(0)); // 随机数种子
     int n = board.size();
@@ -72,7 +74,7 @@ pair<int, int> aiInput(const vector<vector<char>>& board)
         int x = rand() % n;
         int y = rand() % n;
 
-        if (board[x][y] == ' '&&!isForbiddenMove(board, x, y))
+        if (board[x][y] == 0 &&!isForbiddenMove(board, x, y))
         { // 确保选择空格位置
             cout << "AI 选择位置: (" << x << ", " << y << ")" << endl;
             return {x, y};
@@ -83,9 +85,9 @@ pair<int, int> aiInput(const vector<vector<char>>& board)
 
 
 // 判断输入是否合法
-bool isValidMove(const vector<vector<char>>& board, int x, int y) 
+bool isValidMove(const vector<vector<int>>& board, int x, int y) 
 {
-    return x >= 0 && x < board.size() && y >= 0 && y < board.size() && board[x][y] == ' ';
+    return x >= 0 && x < board.size() && y >= 0 && y < board.size() && board[x][y] == 0;
 }
 
 void pauseBeforeUpdate() 

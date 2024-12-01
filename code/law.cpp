@@ -5,13 +5,13 @@
 using namespace std;
 
 // 字符数组，0是白棋“O”,1是黑棋“X”
-char currentPlayerchar[2]={'O','X'};
+int currentPlayerchar[2]={-1,1};
 
 // 方向数组，在后续的计数中分别从这四个方向进行判断
 const int directions[4][2]={{1,0},{0,1},{1,1},{1,-1}}; 
 
 // 检查落子之后是否已经五子连珠
-bool checkwin(const vector<vector<char>>& board,int x,int y,int currentPlayer)
+bool checkwin(const vector<vector<int>>& board,int x,int y,int currentPlayer)
 {
     // 定义方向数组
     
@@ -30,11 +30,11 @@ bool checkwin(const vector<vector<char>>& board,int x,int y,int currentPlayer)
 // 避免平局的情况，实现平局检测
 
 // 检查棋盘是否已满，即检测平局
-bool isBoardFull(const vector<vector<char>>& board) 
+bool isBoardFull(const vector<vector<int>>& board) 
 {
     for (const auto& row : board) {
         for (char cell : row) {
-            if (cell == ' ') return false; // 如果还有空格，棋盘未满
+            if (cell == 0) return false; // 如果还有空格，棋盘未满
         }
     }
     return true;
@@ -44,7 +44,7 @@ bool isBoardFull(const vector<vector<char>>& board)
 
 // 用于统计在某个方向上连续棋子的数目
 // 统计从 (x, y) 开始，指定方向上的连续棋子数（不包括 x, y 本身）
-int countConsecutive(const vector<vector<char>>& board, int x, int y, char player, int dx, int dy) 
+int countConsecutive(const vector<vector<int>>& board, int x, int y, int player, int dx, int dy) 
 {
     int count = 0;
     int n = board.size();
@@ -68,7 +68,7 @@ int countConsecutive(const vector<vector<char>>& board, int x, int y, char playe
 
 // 判断是否为活三，活三要求两端都有空位
 
-bool isLiveThree(const vector<vector<char>>& board, int x, int y, char player, int dx, int dy) 
+bool isLiveThree(const vector<vector<int>>& board, int x, int y, int player, int dx, int dy) 
 {
     int forwardCount = countConsecutive(board, x, y, player, dx, dy);
     int backwardCount = countConsecutive(board, x, y, player, -dx, -dy);
@@ -83,8 +83,8 @@ bool isLiveThree(const vector<vector<char>>& board, int x, int y, char player, i
     int backX = x - (backwardCount + 1) * dx;
     int backY = y - (backwardCount + 1) * dy;
 
-    bool frontEmpty = (frontX >= 0 && frontX < n && frontY >= 0 && frontY < n && board[frontX][frontY] == ' ');
-    bool backEmpty = (backX >= 0 && backX < n && backY >= 0 && backY < n && board[backX][backY] == ' ');
+    bool frontEmpty = (frontX >= 0 && frontX < n && frontY >= 0 && frontY < n && board[frontX][frontY] == 0);
+    bool backEmpty = (backX >= 0 && backX < n && backY >= 0 && backY < n && board[backX][backY] == 0);
 
     // 活三条件：总数为 3 且两端为空
     return totalCount == 3 && frontEmpty && backEmpty;
@@ -92,7 +92,7 @@ bool isLiveThree(const vector<vector<char>>& board, int x, int y, char player, i
 
 // 判断是否为活四，活四要求两端只要有一个空位即可
 
-bool isLiveFour(const vector<vector<char>>& board, int x, int y, char player, int dx, int dy) 
+bool isLiveFour(const vector<vector<int>>& board, int x, int y, int player, int dx, int dy) 
 {
     int forwardCount = countConsecutive(board, x, y, player, dx, dy);
     int backwardCount = countConsecutive(board, x, y, player, -dx, -dy);
@@ -107,8 +107,8 @@ bool isLiveFour(const vector<vector<char>>& board, int x, int y, char player, in
     int backX = x - (backwardCount + 1) * dx;
     int backY = y - (backwardCount + 1) * dy;
 
-    bool frontEmpty = (frontX >= 0 && frontX < n && frontY >= 0 && frontY < n && board[frontX][frontY] == ' ');
-    bool backEmpty = (backX >= 0 && backX < n && backY >= 0 && backY < n && board[backX][backY] == ' ');
+    bool frontEmpty = (frontX >= 0 && frontX < n && frontY >= 0 && frontY < n && board[frontX][frontY] == 0);
+    bool backEmpty = (backX >= 0 && backX < n && backY >= 0 && backY < n && board[backX][backY] == 0);
 
     // 活四条件：总数为 4 且至少一端为空
     return totalCount == 4 && (frontEmpty || backEmpty);
@@ -116,7 +116,7 @@ bool isLiveFour(const vector<vector<char>>& board, int x, int y, char player, in
 
 // 长连禁手判断函数
 
-bool isOverline(const vector<vector<char>>& board, int x, int y, char player) 
+bool isOverline(const vector<vector<int>>& board, int x, int y, int player) 
 {
  
     for (auto dir : directions) 
@@ -135,19 +135,19 @@ bool isOverline(const vector<vector<char>>& board, int x, int y, char player)
 
 // 整合的禁手判断函数
 
-bool isForbiddenMove(const vector<vector<char>>& board, int x, int y) 
+bool isForbiddenMove(const vector<vector<int>>& board, int x, int y) 
 {
     
     int liveThreeCount = 0, liveFourCount = 0;
 
     for (auto dir : directions) 
     {
-        if (isLiveThree(board, x, y, 'X', dir[0], dir[1])) liveThreeCount++;
-        if (isLiveFour(board, x, y, 'X', dir[0], dir[1])) liveFourCount++;
+        if (isLiveThree(board, x, y, 1, dir[0], dir[1])) liveThreeCount++;
+        if (isLiveFour(board, x, y, 1, dir[0], dir[1])) liveFourCount++;
     }
 
     // 禁手规则判断
-    if (isOverline(board, x, y, 'X')) 
+    if (isOverline(board, x, y, 1)) 
     {
         cout << "长连禁手！" << endl;
         return true;
