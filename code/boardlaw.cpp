@@ -125,25 +125,21 @@ void GomokuBoard::updateAllCache(int x, int y){
 }
 
 // 打印棋盘
-void GomokuBoard::printBoard() const{
+void GomokuBoard::printBoard() const
+{
+    system("cls");
     // 打印列索引
-    std::cout << "   ";
+    std::cout << "\t";
     for(int x =0; x < size; ++x){
-        if(x <10)
-            std::cout << x << "  ";
-        else
-            std::cout << x << " ";
+         cout << x << "\t"; // 使用制表符对齐
     }
     std::cout << std::endl;
 
     // 打印每一行
     for(int y =0; y < size; ++y){
-        if(y <10)
-            std::cout << y << "  ";
-        else
-            std::cout << y << " ";
+        cout << y << "\t"; // 行编号
         for(int x =0; x < size; ++x){
-            std::cout << cellToChar(board[y][x]) << "  ";
+            std::cout << cellToChar(board[y][x]) << "\t";
         }
         std::cout << std::endl;
     }
@@ -270,8 +266,52 @@ bool GomokuBoard::redo(){
     return true;
 }
 
-// 新增：落子函数，用于人类玩家
-bool GomokuBoard::placePiece(int x, int y, int color){
+pair<int,int> GomokuBoard::inputfunction(bool currentPlayerType,int currentPlayer)
+{
+    pair<int,int> input;
+    if(currentPlayerType)
+    {
+        cout<<"ai进行输入"<<endl;
+        input= aiInput(currentPlayer);
+    }
+    else
+    {
+        cout<<"人类进行输入"<<endl;
+        input= humanInput();
+    }
+    return input;
+}
+
+pair<int,int> GomokuBoard::humanInput()
+{
+    int x,y;
+    cout << "请输入落子位置 (行 列): ";
+    cin >> y >> x;
+    return {y,x};
+}
+
+pair<int, int> GomokuBoard::aiInput(int currentPlayer)
+{
+    srand(time(0)); // 随机数种子
+    int n = size;
+
+    while (true) {
+        int x = rand() % n;
+        int y = rand() % n;
+
+        if (board[y][x] == 0 &&!isForbiddenMove(*this, x, y,currentPlayer))
+        { // 确保选择空格位置
+            cout << "AI 选择位置: (" << y << ", " << x << ")" << endl;
+            return {y, x};
+        }
+    }
+}
+
+// 落子函数
+bool GomokuBoard::placePiece(bool currentPlayerType,int color)
+{
+    pair<int,int> i=inputfunction(currentPlayerType,color);
+    int y=i.first;int x=i.second;
     if(x <0 || x >= size || y <0 || y >= size){
         std::cerr << "位置超出棋盘范围。" << std::endl;
         return false;
@@ -291,38 +331,26 @@ bool GomokuBoard::placePiece(int x, int y, int color){
     return true;
 }
 
-// 新增：AI随机落子函数
-bool GomokuBoard::aiMove(int color, int& out_x, int& out_y){
-    std::vector<std::pair<int, int>> emptyPositions;
+
+// 新增：检查是否有玩家胜利
+bool GomokuBoard::checkWin(int x, int y, int color) const{
+    for(const auto& dir : DIRECTIONS){
+        if(hasFive(*this, x, y, color, dir)){
+            return true;
+        }
+    }
+    return false;
+}
+
+// 新增：检查是否平局
+bool GomokuBoard::isDraw() const{
     for(int y =0; y < size; ++y){
         for(int x =0; x < size; ++x){
             if(board[y][x] ==0){
-                emptyPositions.emplace_back(x, y);
+                return false;
             }
         }
     }
-    if(emptyPositions.empty()){
-        std::cerr << "棋盘已满，无法进行AI落子。" << std::endl;
-        return false;
-    }
-
-    // 初始化随机数生成器
-    static std::mt19937 rng(static_cast<unsigned int>(std::time(nullptr)));
-    std::uniform_int_distribution<int> dist(0, emptyPositions.size()-1);
-    int idx = dist(rng);
-    out_x = emptyPositions[idx].first;
-    out_y = emptyPositions[idx].second;
-
-    // 保存当前状态到撤销栈
-    saveStateToUndo();
-    // 清空重做栈
-    clearRedoStack();
-    // 放置棋子
-    board[out_y][out_x] = color;
-    // 更新缓存
-    updateAllCache(out_x, out_y);
-
-    std::cout << "AI 在位置 (" << out_x << ", " << out_y << ") 落子。" << std::endl;
     return true;
 }
 
@@ -802,4 +830,11 @@ int main(){
     }
 
     return 0;
+}
+
+void pauseBeforeUpdate() 
+{
+    cout << "按回车键继续..." << endl;
+    cin.ignore(); // 忽略缓冲区
+    cin.get();    // 等待用户输入
 }

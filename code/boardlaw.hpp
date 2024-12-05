@@ -56,11 +56,21 @@ public:
     // 重做最后一次撤销
     bool redo();
 
-    // 新增：落子函数，用于人类玩家
-    bool placePiece(int x, int y, int color);
+    pair<int,int> inputfunction(bool currentPlayerType,int currentPlayer);
+
+    pair<int,int> humanInput();
+
+    pair<int, int> aiInput(int currentPlayer);
+
+    // 落子函数
+    bool placePiece(bool currentPlayerType, int color);
+
+    bool GomokuBoard::checkWin(int x, int y, int color) const;
+
+    bool GomokuBoard::isDraw() const;
 
     // 新增：AI随机落子函数
-    bool aiMove(int color, int& out_x, int& out_y);
+    // bool aiMove(int color, int& out_x, int& out_y);
 
 private:
     // 撤销与重做的栈
@@ -100,5 +110,8 @@ int countTripleFours(const GomokuBoard &gb, int x, int y, int color);
 
 // 主函数：判断是否为禁手
 bool isForbiddenMove(GomokuBoard &gb, int last_x, int last_y, int color);
+
+void pauseBeforeUpdate();
+
 
 #endif // GOMOKU_BOARD_HPP
