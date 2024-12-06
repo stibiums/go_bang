@@ -7,10 +7,12 @@
             "command": "g++",
             "args": [
                 "main.cpp",
-                "board.cpp",
-                "law.cpp",
+                "boardlaw.cpp",
+                "aimove.cpp",
+                //"board.cpp",
+                //"law.cpp",
                 "menu.cpp",
-                "aimodel.cpp",
+                //"aimodel.cpp",
                 "-o",
                 "main.exe"
             ],

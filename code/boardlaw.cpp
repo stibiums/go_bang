@@ -1,218 +1,117 @@
-#include "boardlaw.hpp"
+// boardlaw.cpp
 
+#include "boardlaw.hpp"
+#include "aimove.hpp" // 引入AI移动类
 #include <iostream>
-#include <fstream>
-#include <random>
-#include <ctime>
+#include <algorithm>
+#include <limits>
 
 using namespace std;
 
-
-
-// 构造函数
-GomokuBoard::GomokuBoard(int board_size) : size(board_size),
-    board(board_size, std::vector<int>(board_size, 0)),
-    horizontal_lines(board_size, ""),
-    vertical_lines(board_size, ""),
-    main_diagonals(2 * board_size -1, ""),
-    anti_diagonals(2 * board_size -1, "") {}
-
-// 将棋子状态转换为字符
-char GomokuBoard::cellToChar(int cell) const {
-    if(cell ==1)
-        return BLACK;
-    else if(cell ==2)
-        return WHITE;
-    else
-        return EMPTY;
-}
-
-// 将字符转换为棋子状态
-int GomokuBoard::charToCell(char c) const {
-    if(c == BLACK)
-        return 1;
-    else if(c == WHITE)
-        return 2;
-    else
-        return 0;
-}
-
-// 初始化所有缓存
-void GomokuBoard::initializeCache(){
-    // 初始化水平线
-    for(int y =0; y < size; ++y){
-        std::string line = "";
-        for(int x =0; x < size; ++x){
-            line += cellToChar(board[y][x]);
-        }
-        horizontal_lines[y] = line;
-    }
-
-    // 初始化垂直线
-    for(int x =0; x < size; ++x){
-        std::string line = "";
-        for(int y =0; y < size; ++y){
-            line += cellToChar(board[y][x]);
-        }
-        vertical_lines[x] = line;
-    }
-
-    // 初始化主对角线
-    for(int d = -(size-1); d <= size-1; ++d){
-        std::string line = "";
-        for(int y =0; y < size; ++y){
-            int x = y - d;
-            if(x >=0 && x < size){
-                line += cellToChar(board[y][x]);
-            }
-        }
-        main_diagonals[d + (size-1)] = line;
-    }
-
-    // 初始化反对角线
-    for(int d =0; d < 2*size-1; ++d){
-        std::string line = "";
-        for(int y =0; y < size; ++y){
-            int x = d - y;
-            if(x >=0 && x < size){
-                line += cellToChar(board[y][x]);
-            }
-        }
-        anti_diagonals[d] = line;
-    }
-}
-
-// 更新所有缓存
-void GomokuBoard::updateAllCache(int x, int y){
-    // 更新水平线
-    std::string h_line = "";
-    for(int col =0; col < size; ++col){
-        h_line += cellToChar(board[y][col]);
-    }
-    horizontal_lines[y] = h_line;
-
-    // 更新垂直线
-    std::string v_line = "";
-    for(int row =0; row < size; ++row){
-        v_line += cellToChar(board[row][x]);
-    }
-    vertical_lines[x] = v_line;
-
-    // 更新主对角线
-    int d_main = y - x;
-    int index_main = d_main + (size -1);
-    std::string m_line = "";
-    for(int row =0; row < size; ++row){
-        int col = row - d_main;
-        if(col >=0 && col < size){
-            m_line += cellToChar(board[row][col]);
-        }
-    }
-    main_diagonals[index_main] = m_line;
-
-    // 更新反对角线
-    int d_anti = y + x;
-    std::string a_line = "";
-    for(int row =0; row < size; ++row){
-        int col = d_anti - row;
-        if(col >=0 && col < size){
-            a_line += cellToChar(board[row][col]);
-        }
-    }
-    if(d_anti >=0 && d_anti < anti_diagonals.size()){
-        anti_diagonals[d_anti] = a_line;
-    }
-}
-
-// 打印棋盘
-void GomokuBoard::printBoard() const
+/**
+ * @brief 构造函数，初始化棋盘大小和各类缓存。
+ * @param board_size 棋盘的大小（例如15）。
+ */
+GomokuBoard::GomokuBoard(int board_size) : size(board_size), board(board_size, vector<int>(board_size, 0)),
+    horizontal_lines(board_size, string(board_size, '.')),
+    vertical_lines(board_size, string(board_size, '.')),
+    main_diagonals(2 * board_size -1, string(board_size, '.')),
+    anti_diagonals(2 * board_size -1, string(board_size, '.'))
 {
-    system("cls");
-    // 打印列索引
-    std::cout << "\t";
-    for(int x =0; x < size; ++x){
-         cout << x << "\t"; // 使用制表符对齐
-    }
-    std::cout << std::endl;
-
-    // 打印每一行
-    for(int y =0; y < size; ++y){
-        cout << y << "\t"; // 行编号
-        for(int x =0; x < size; ++x){
-            std::cout << cellToChar(board[y][x]) << "\t";
-        }
-        std::cout << std::endl;
-    }
-}
-
-// 保存棋盘到二进制文件
-bool GomokuBoard::saveToFile(const std::string& filename) const{
-    std::ofstream ofs(filename, std::ios::binary);
-    if(!ofs.is_open()){
-        std::cerr << "无法打开文件进行保存: " << filename << std::endl;
-        return false;
-    }
-    // 写入棋盘大小
-    ofs.write(reinterpret_cast<const char*>(&size), sizeof(size));
-    // 写入棋盘内容
-    for(int y =0; y < size; ++y){
-        for(int x =0; x < size; ++x){
-            char c = cellToChar(board[y][x]);
-            ofs.write(&c, sizeof(c));
-        }
-    }
-    ofs.close();
-    return true;
-}
-
-// 从二进制文件加载棋盘
-bool GomokuBoard::loadFromFile(const std::string& filename){
-    std::ifstream ifs(filename, std::ios::binary);
-    if(!ifs.is_open()){
-        std::cerr << "无法打开文件进行读取: " << filename << std::endl;
-        return false;
-    }
-    // 读取棋盘大小
-    int new_size;
-    ifs.read(reinterpret_cast<char*>(&new_size), sizeof(new_size));
-    if(new_size <=0){
-        std::cerr << "无效的棋盘大小: " << new_size << std::endl;
-        return false;
-    }
-    // 读取棋盘内容
-    std::vector<std::vector<int>> new_board(new_size, std::vector<int>(new_size, 0));
-    for(int y =0; y < new_size; ++y){
-        for(int x =0; x < new_size; ++x){
-            char c;
-            ifs.read(&c, sizeof(c));
-            new_board[y][x] = charToCell(c);
-        }
-    }
-    if(ifs.fail()){
-        std::cerr << "棋盘数据读取失败，文件可能已损坏。" << std::endl;
-        return false;
-    }
-    // 更新棋盘和缓存
-    size = new_size;
-    board = std::move(new_board);
-    // 重置缓存容器
-    horizontal_lines.assign(size, "");
-    vertical_lines.assign(size, "");
-    main_diagonals.assign(2 * size -1, "");
-    anti_diagonals.assign(2 * size -1, "");
-    // 初始化缓存
     initializeCache();
-    ifs.close();
-    return true;
 }
 
-// 保存当前状态到撤销栈
+/**
+ * @brief 初始化棋盘缓存。
+ */
+void GomokuBoard::initializeCache(){
+    // 初始化所有方向的缓存
+    horizontal_lines.assign(size, string(size, '.'));
+    vertical_lines.assign(size, string(size, '.'));
+    main_diagonals.assign(2 * size -1, string(size, '.'));
+    anti_diagonals.assign(2 * size -1, string(size, '.'));
+
+    for(int x=0; x < size; x++){
+        for(int y=0; y < size; y++){
+            if(board[x][y] !=0){
+                char c = (board[x][y] ==1) ? 'X' : 'O';
+                // 水平
+                horizontal_lines[x][y] = c;
+                // 垂直
+                vertical_lines[y][x] = c;
+                // 主对角线
+                main_diagonals[x - y + size -1][min(x, y)] = c;
+                // 反对角线
+                anti_diagonals[x + y][min(x, size -1 - y)] = c;
+            }
+        }
+    }
+}
+
+/**
+ * @brief 更新棋盘缓存。
+ * @param x 行坐标。
+ * @param y 列坐标。
+ */
+void GomokuBoard::updateAllCache(int x, int y){
+    if(board[x][y] !=0){
+        char c = (board[x][y] ==1) ? 'X' : 'O';
+        // 水平
+        horizontal_lines[x][y] = c;
+        // 垂直
+        vertical_lines[y][x] = c;
+        // 主对角线
+        main_diagonals[x - y + size -1][min(x, y)] = c;
+        // 反对角线
+        anti_diagonals[x + y][min(x, size -1 - y)] = c;
+    }
+}
+
+/**
+ * @brief 打印当前棋盘状态。
+ */
+void GomokuBoard::printBoard() const{
+    // 打印列号
+    system("cls");
+    cout << "\t";
+    for(int y=0; y < size; y++) cout << y << "\t";
+    cout << endl;
+
+    for(int x=0; x < size; x++){
+        // 打印行号
+        cout << x << "\t";
+
+        for(int y=0; y < size; y++){
+            char c;
+            if(board[x][y] ==1) c = 'X';
+            else if(board[x][y] ==2) c = 'O';
+            else c = '.';
+            cout << c << "\t";
+        }
+        cout << endl;
+    }
+}
+
+
+/**
+ * @brief 判断当前落子是否合法。
+ * @param x 行坐标。
+ * @param y 列坐标。
+ * @return 合法返回true，否则返回false。
+ */
+bool GomokuBoard::isValidMove(int x, int y) const{
+    return x >=0 && x < size && y >=0 && y < size && board[x][y] ==0;
+}
+
+/**
+ * @brief 保存当前状态到撤销栈。
+ */
 void GomokuBoard::saveStateToUndo(){
     undoStack.push(board);
-    // 限制撤销栈的大小（例如最多保存100步）
-    if(undoStack.size() > 100){
-        // 无法直接限制栈的大小，需要将底部元素移除，可以使用辅助栈
-        std::stack<std::vector<std::vector<int>>> tempStack;
+    // 限制撤销栈大小为200
+    if(undoStack.size() > 200){
+        // 需要移除底部元素
+        stack<vector<vector<int>>> tempStack;
         while(undoStack.size() >1){
             tempStack.push(undoStack.top());
             undoStack.pop();
@@ -227,383 +126,133 @@ void GomokuBoard::saveStateToUndo(){
     }
 }
 
-// 清空重做栈
+/**
+ * @brief 清空重做栈。
+ */
 void GomokuBoard::clearRedoStack(){
     while(!redoStack.empty()){
         redoStack.pop();
     }
 }
 
-// 撤销操作
-bool GomokuBoard::undo(){
-    if(undoStack.empty()){
-        std::cerr << "无法撤销，已经是第一步了。" << std::endl;
-        return false;
-    }
-    // 将当前状态推入重做栈
-    redoStack.push(board);
-    // 从撤销栈中恢复上一步状态
-    board = undoStack.top();
-    undoStack.pop();
-    // 更新缓存
-    initializeCache();
-    return true;
-}
-
-// 重做操作
-bool GomokuBoard::redo(){
-    if(redoStack.empty()){
-        std::cerr << "无法重做，已经没有更多的操作了。" << std::endl;
-        return false;
-    }
-    // 将当前状态推入撤销栈
-    saveStateToUndo();
-    // 从重做栈中恢复下一步状态
-    board = redoStack.top();
-    redoStack.pop();
-    // 更新缓存
-    initializeCache();
-    return true;
-}
-
-pair<int,int> GomokuBoard::inputfunction(bool currentPlayerType,int currentPlayer)
-{
-    pair<int,int> input;
-    if(currentPlayerType)
-    {
-        cout<<"ai进行输入"<<endl;
-        input= aiInput(currentPlayer);
-    }
-    else
-    {
-        cout<<"人类进行输入"<<endl;
-        input= humanInput();
-    }
-    return input;
-}
-
-pair<int,int> GomokuBoard::humanInput()
-{
-    int x,y;
-    cout << "请输入落子位置 (行 列): ";
-    cin >> y >> x;
-    return {y,x};
-}
-
-pair<int, int> GomokuBoard::aiInput(int currentPlayer)
-{
-    srand(time(0)); // 随机数种子
-    int n = size;
-
-    while (true) {
-        int x = rand() % n;
-        int y = rand() % n;
-
-        if (board[y][x] == 0 &&!isForbiddenMove(*this, x, y,currentPlayer))
-        { // 确保选择空格位置
-            cout << "AI 选择位置: (" << y << ", " << x << ")" << endl;
-            return {y, x};
-        }
-    }
-}
-
-// 落子函数
-bool GomokuBoard::placePiece(bool currentPlayerType,int color)
-{
-    pair<int,int> i=inputfunction(currentPlayerType,color);
-    int y=i.first;int x=i.second;
-    if(x <0 || x >= size || y <0 || y >= size){
-        std::cerr << "位置超出棋盘范围。" << std::endl;
-        return false;
-    }
-    if(board[y][x] !=0){
-        std::cerr << "该位置已有棋子。" << std::endl;
-        return false;
-    }
+/**
+ * @brief 放置棋子。
+ * @param currentPlayerType 当前玩家类型，true为AI，false为人类。
+ * @param color 棋子的颜色，1为黑子，2为白子。
+ * @param x 行坐标。
+ * @param y 列坐标。
+ */
+void GomokuBoard::placePiece(bool currentPlayerType, int color, int x, int y){
     // 保存当前状态到撤销栈
     saveStateToUndo();
     // 清空重做栈
     clearRedoStack();
     // 放置棋子
-    board[y][x] = color;
+    board[x][y] = color;
     // 更新缓存
     updateAllCache(x, y);
+}
+
+/**
+ * @brief 撤销操作，回退两步棋（两个玩家的落子）。
+ * @return 成功撤销返回true，否则返回false。
+ */
+bool GomokuBoard::undo(){
+    // 一次撤销两步（两个玩家的落子）
+    if(undoStack.size() <2){
+        cerr << "无法撤销，没有足够的历史状态。" << endl;
+        return false;
+    }
+
+    // 回退一步
+    board = undoStack.top();
+    undoStack.pop();
+
+    // 再回退一步
+    board = undoStack.top();
+    undoStack.pop();
+
+    // 更新缓存
+    initializeCache();
+    // 保存到重做栈
+    redoStack.push(board);
     return true;
 }
 
-
-// 新增：检查是否有玩家胜利
-bool GomokuBoard::checkWin(int x, int y, int color) const{
-    for(const auto& dir : DIRECTIONS){
-        if(hasFive(*this, x, y, color, dir)){
-            return true;
-        }
+/**
+ * @brief 重做操作，恢复两步棋（两个玩家的落子）。
+ * @return 成功重做返回true，否则返回false。
+ */
+bool GomokuBoard::redo(){
+    // 重做两步（对应撤销的两步）
+    if(redoStack.size() <2){
+        cerr << "无法重做，没有足够的操作可重做。" << endl;
+        return false;
     }
-    return false;
-}
 
-// 新增：检查是否平局
-bool GomokuBoard::isDraw() const{
-    for(int y =0; y < size; ++y){
-        for(int x =0; x < size; ++x){
-            if(board[y][x] ==0){
-                return false;
-            }
-        }
-    }
+    // 恢复一步
+    board = redoStack.top();
+    redoStack.pop();
+
+    // 恢复第二步
+    board = redoStack.top();
+    redoStack.pop();
+
+    // 更新缓存
+    initializeCache();
+    // 保存回撤销栈
+    undoStack.push(board);
     return true;
 }
 
-
-// 检查是否恰好形成五子
-bool hasFive(const GomokuBoard &gb, int x, int y, int color, const std::pair<int, int>& dir) {
-    int dx = dir.first, dy = dir.second;
-    int count =1;
-    // 向正方向计数
-    int i = y + dy, j = x + dx;
-    while(i >=0 && i < gb.size && j >=0 && j < gb.size && gb.board[i][j] == color){
-        count++;
-        i += dy;
-        j += dx;
+/**
+ * @brief 获取玩家的落子输入。
+ * @param currentPlayerType 当前玩家类型，true为AI，false为人类。
+ * @param currentPlayer 当前玩家颜色，1为黑子，2为白子。
+ * @return 返回落子位置的 (x, y) 坐标对。
+ */
+std::pair<int, int> GomokuBoard::inputfunction(bool currentPlayerType, int currentPlayer){
+    std::pair<int, int> input;
+    if(currentPlayerType){
+        cout << "AI进行输入" << endl;
+        input = aiInput(currentPlayer);
     }
-    // 向负方向计数
-    i = y - dy, j = x - dx;
-    while(i >=0 && i < gb.size && j >=0 && j < gb.size && gb.board[i][j] == color){
-        count++;
-        i -= dy;
-        j -= dx;
+    else{
+        cout << "人类进行输入" << endl;
+        input = humanInput();
     }
-    return count ==5;
+    return input;
 }
 
-// 检查是否形成长连（超过五子）
-bool hasOverFive(const GomokuBoard &gb, int x, int y, int color, const std::pair<int, int>& dir) {
-    int dx = dir.first, dy = dir.second;
-    int count =1;
-    // 向正方向计数
-    int i = y + dy, j = x + dx;
-    while(i >=0 && i < gb.size && j >=0 && j < gb.size && gb.board[i][j] == color){
-        count++;
-        i += dy;
-        j += dx;
-    }
-    // 向负方向计数
-    i = y - dy, j = x - dx;
-    while(i >=0 && i < gb.size && j >=0 && j < gb.size && gb.board[i][j] == color){
-        count++;
-        i -= dy;
-        j -= dx;
-    }
-    return count >5;
+/**
+ * @brief 人类玩家输入。
+ * @return 返回落子位置的 (x, y) 坐标对。
+ */
+std::pair<int, int> GomokuBoard::humanInput(){
+    int x, y;
+    cout << "请输入落子位置 (行 列), 悔棋请输(-1 -1): ";
+    cin >> x >> y;
+    return {x, y};
 }
 
-// 判断是否为活四（根据用户规则）
-bool isLiveFour(const GomokuBoard &gb, int x, int y, int color, const std::pair<int, int>& dir){
-    int dx = dir.first, dy = dir.second;
-    std::string line;
-
-    // 根据方向获取对应的线字符串
-    if(dx ==1 && dy ==0){ // 横向
-        line = gb.horizontal_lines[y];
-    }
-    else if(dx ==0 && dy ==1){ // 纵向
-        line = gb.vertical_lines[x];
-    }
-    else if(dx ==1 && dy ==1){ // 主对角线
-        int d_main = y - x;
-        int index_main = d_main + (gb.size -1);
-        if(index_main <0 || index_main >= gb.main_diagonals.size())
-            return false;
-        line = gb.main_diagonals[index_main];
-    }
-    else if(dx ==1 && dy ==-1){ // 反对角线
-        int d_anti = y + x;
-        if(d_anti <0 || d_anti >= gb.anti_diagonals.size())
-            return false;
-        line = gb.anti_diagonals[d_anti];
-    }
-
-    // 确定最后落子在该线上的位置
-    int last_pos = -1;
-    if(dx ==1 && dy ==0){ // 横向
-        last_pos = x;
-    }
-    else if(dx ==0 && dy ==1){ // 纵向
-        last_pos = y;
-    }
-    else if(dx ==1 && dy ==1){ // 主对角线
-        int d_main = y - x;
-        if(d_main <=0){
-            last_pos = x;
-        }
-        else{
-            last_pos = y;
-        }
-    }
-    else if(dx ==1 && dy ==-1){ // 反对角线
-        int d_anti = y + x;
-        if(d_anti < gb.size){
-            last_pos = x;
-        }
-        else{
-            last_pos = x - (d_anti - (gb.size -1));
-        }
-    }
-
-    if(last_pos == -1)
-        return false;
-
-    // 查找"0XXXX0"模式
-    size_t pos = line.find("0XXXX0");
-    while(pos != std::string::npos){
-        // 检查最后落子点是否在"XXXX"中
-        if(last_pos >= pos +1 && last_pos < pos +5){
-            // "0XXXX0" 模式下，任一端落子会形成五子，不形成长连
-            return true;
-        }
-        pos = line.find("0XXXX0", pos +1);
-    }
-    return false;
+/**
+ * @brief 获取AI玩家的落子位置，使用更智能的算法。
+ * @param color AI玩家的颜色，1为黑子，2为白子。
+ * @return 返回AI选择的 (x, y) 坐标对。
+ */
+std::pair<int, int> GomokuBoard::aiInput(int color){
+    // 通过AIMove类获取最佳落子
+    return AIMove::getBestMove(*this, color);
 }
 
-// 判断是否为活三
-bool isLiveThree(const GomokuBoard &gb, int x, int y, int color, const std::pair<int, int>& dir){
-    int dx = dir.first, dy = dir.second;
-    std::string line;
-
-    // 根据方向获取对应的线字符串
-    if(dx ==1 && dy ==0){ // 横向
-        line = gb.horizontal_lines[y];
-    }
-    else if(dx ==0 && dy ==1){ // 纵向
-        line = gb.vertical_lines[x];
-    }
-    else if(dx ==1 && dy ==1){ // 主对角线
-        int d_main = y - x;
-        int index_main = d_main + (gb.size -1);
-        if(index_main <0 || index_main >= gb.main_diagonals.size())
-            return false;
-        line = gb.main_diagonals[index_main];
-    }
-    else if(dx ==1 && dy ==-1){ // 反对角线
-        int d_anti = y + x;
-        if(d_anti <0 || d_anti >= gb.anti_diagonals.size())
-            return false;
-        line = gb.anti_diagonals[d_anti];
-    }
-
-    // 确定最后落子在该线上的位置
-    int last_pos = -1;
-    if(dx ==1 && dy ==0){ // 横向
-        last_pos = x;
-    }
-    else if(dx ==0 && dy ==1){ // 纵向
-        last_pos = y;
-    }
-    else if(dx ==1 && dy ==1){ // 主对角线
-        int d_main = y - x;
-        if(d_main <=0){
-            last_pos = x;
-        }
-        else{
-            last_pos = y;
-        }
-    }
-    else if(dx ==1 && dy ==-1){ // 反对角线
-        int d_anti = y + x;
-        if(d_anti < gb.size){
-            last_pos = x;
-        }
-        else{
-            last_pos = x - (d_anti - (gb.size -1));
-        }
-    }
-
-    if(last_pos == -1)
-        return false;
-
-    // 遍历线中的每一个空位，模拟放置一个黑子
-    for(int i =0; i < (int)line.size(); ++i){
-        if(line[i] != '.') continue;
-
-        // 模拟放置黑子
-        std::string tempLine = line;
-        tempLine[i] = 'X';
-
-        // 检查是否形成"0XXXX0"模式
-        size_t pos_found = tempLine.find("0XXXX0");
-        while(pos_found != std::string::npos){
-            // 检查放置的点是否在"XXXX"中
-            if(i >= pos_found +1 && i < pos_found +5){
-                // 表示形成活四
-                return true;
-            }
-            pos_found = tempLine.find("0XXXX0", pos_found +1);
-        }
-    }
-    return false;
-}
-
-// 新增：判断是否为双四
-int countLiveFours(const GomokuBoard &gb, int x, int y, int color){
-    int count =0;
-    for(auto &dir : DIRECTIONS){
-        if(isLiveFour(gb, x, y, color, dir)){
-            count++;
-            if(count >=2){
-                break;
-            }
-        }
-    }
-    return count;
-}
-
-// 新增：判断是否为双活三
-int countLiveThrees(const GomokuBoard &gb, int x, int y, int color){
-    int count =0;
-    for(auto &dir : DIRECTIONS){
-        if(isLiveThree(gb, x, y, color, dir)){
-            count++;
-            if(count >=2){
-                break;
-            }
-        }
-    }
-    return count;
-}
-
-// 新增：判断是否为三个三
-int countTripleThrees(const GomokuBoard &gb, int x, int y, int color){
-    int count =0;
-    for(auto &dir : DIRECTIONS){
-        // 需要扩展活三的检测，确保有至少三个活三
-        // 这里只是一个简单的计数，实际情况可能需要更复杂的检测
-        if(isLiveThree(gb, x, y, color, dir)){
-            count++;
-            if(count >=3){
-                break;
-            }
-        }
-    }
-    return count;
-}
-
-// 新增：判断是否为三个四
-int countTripleFours(const GomokuBoard &gb, int x, int y, int color){
-    int count =0;
-    for(auto &dir : DIRECTIONS){
-        if(isLiveFour(gb, x, y, color, dir)){
-            count++;
-            if(count >=3){
-                break;
-            }
-        }
-    }
-    return count;
-}
-
-// 主函数：判断是否为禁手
-bool isForbiddenMove(GomokuBoard &gb, int last_x, int last_y, int color){
+/**
+ * @brief 判断当前落子是否违反禁手规则。
+ * @param x 行坐标。
+ * @param y 列坐标。
+ * @param color 棋子的颜色，1为黑子，2为白子。
+ * @return 违反禁手返回true，否则返回false。
+ */
+bool GomokuBoard::isForbiddenMove(int x, int y, int color) const{
     if(color !=1){
         // 只有黑方有禁手限制
         return false;
@@ -611,59 +260,35 @@ bool isForbiddenMove(GomokuBoard &gb, int last_x, int last_y, int color){
 
     bool hasFiveFlag = false;
     bool hasOverFiveFlag = false;
-    int fourCount =0;
-    int liveThreeCount =0;
-    int tripleThreeCount =0;
-    int tripleFourCount =0;
 
-    // 遍历所有方向
+    // 检查是否有五子或长连
     for(auto &dir : DIRECTIONS){
-        // 检查是否形成五子
-        if(!hasFiveFlag && hasFive(gb, last_x, last_y, color, dir)){
+        if(!hasFiveFlag && hasFive(x, y, color, dir)){
             hasFiveFlag = true;
         }
-
-        // 检查是否形成长连
-        if(!hasOverFiveFlag && hasOverFive(gb, last_x, last_y, color, dir)){
+        if(!hasOverFiveFlag && hasOverFive(x, y, color, dir)){
             hasOverFiveFlag = true;
         }
-
-        // 检查是否形成活四
-        if(isLiveFour(gb, last_x, last_y, color, dir)){
-            fourCount++;
-        }
-
-        // 检查是否形成活三
-        if(isLiveThree(gb, last_x, last_y, color, dir)){
-            liveThreeCount++;
-        }
     }
 
-    // 新增：检查是否形成三个三
-    tripleThreeCount = countTripleThrees(gb, last_x, last_y, color);
-
-    // 新增：检查是否形成三个四
-    tripleFourCount = countTripleFours(gb, last_x, last_y, color);
-
-    // 新增：检查是否形成双四
-    fourCount = countLiveFours(gb, last_x, last_y, color);
-
-    // 新增：检查是否形成双活三
-    liveThreeCount = countLiveThrees(gb, last_x, last_y, color);
-
-    // 特殊情况：同时形成五子和禁手，五子优先判定为胜利
+    // 若有五子则不算禁手
     if(hasFiveFlag){
-        return false; // 不算禁手，黑方获胜
+        return false;
     }
+
+    // 统计活四和活三的数量
+    int fourCount = countLiveFours(x, y, color);
+    int liveThreeCount = countLiveThrees(x, y, color);
+    int tripleThreeCount = countTripleThrees(x, y, color);
+    int tripleFourCount = countTripleFours(x, y, color);
 
     // 禁手类型优先级：
     // 1. 长连
-    // 2. 三四四
+    // 2. 三个四
     // 3. 三三四
-    // 4. 双四
-    // 5. 双活三
-    // 6. 三个三
-    // 7. 三个四
+    // 4. 三个三
+    // 5. 双四
+    // 6. 双活三
 
     if(hasOverFiveFlag){
         return true; // 长连禁手
@@ -692,149 +317,259 @@ bool isForbiddenMove(GomokuBoard &gb, int last_x, int last_y, int color){
     return false; // 非禁手
 }
 
-
-
-/////
-
-
-#include <iostream>
-
-int main(){
-    // 创建一个可自定义大小的棋盘
-    int board_size;
-    std::cout << "请输入棋盘大小（推荐15）：";
-    std::cin >> board_size;
-    if(board_size <=0){
-        std::cout << "无效的棋盘大小。" << std::endl;
-        return 1;
+/**
+ * @brief 检查当前落子是否形成五子。
+ * @param x 行坐标。
+ * @param y 列坐标。
+ * @param color 棋子的颜色。
+ * @param dir 方向向量。
+ * @return 形成五子返回true，否则返回false。
+ */
+bool GomokuBoard::hasFive(int x, int y, int color, const std::pair<int, int>& dir) const{
+    int dx = dir.first, dy = dir.second;
+    int count =1;
+    // 向正方向计数
+    int i = x + dx, j = y + dy;
+    while(i >=0 && i < size && j >=0 && j < size && board[i][j] == color){
+        count++;
+        i += dx;
+        j += dy;
     }
-
-    GomokuBoard gb(board_size);
-    gb.initializeCache();
-
-    // 用户交互菜单
-    while(true){
-        std::cout << "\n五子棋禁手判断程序" << std::endl;
-        std::cout << "1. 放置棋子" << std::endl;
-        std::cout << "2. 保存棋盘到文件" << std::endl;
-        std::cout << "3. 从文件加载棋盘" << std::endl;
-        std::cout << "4. 打印当前棋盘" << std::endl;
-        std::cout << "5. 退出" << std::endl;
-        std::cout << "请选择操作（1-5）：";
-        int choice;
-        std::cin >> choice;
-
-        if(choice ==1){
-            // 放置棋子
-            int x, y, color_input;
-            std::cout << "请输入棋子位置 x y（0到" << board_size-1 << "）：";
-            std::cin >> x >> y;
-            if(x <0 || x >= board_size || y <0 || y >= board_size){
-                std::cout << "位置超出棋盘范围。" << std::endl;
-                continue;
-            }
-            if(gb.board[y][x] !=0){
-                std::cout << "该位置已有棋子。" << std::endl;
-                continue;
-            }
-            std::cout << "请选择棋子颜色（1: 黑子, 2: 白子）：";
-            std::cin >> color_input;
-            if(color_input !=1 && color_input !=2){
-                std::cout << "无效的颜色选择。" << std::endl;
-                continue;
-            }
-            gb.board[y][x] = color_input;
-            gb.updateAllCache(x, y);
-
-            // 判断是否为禁手或五子
-            bool forbidden = isForbiddenMove(gb, x, y, color_input);
-            if(color_input ==1){
-                if(forbidden){
-                    std::cout << "黑方下出禁手，白方获胜" << std::endl;
-                }
-                else{
-                    // 检查是否形成五子
-                    bool hasFiveFlag = false;
-                    for(auto &dir : DIRECTIONS){
-                        if(hasFive(gb, x, y, color_input, dir)){
-                            hasFiveFlag = true;
-                            break;
-                        }
-                    }
-                    if(hasFiveFlag){
-                        std::cout << "黑方形成五子，黑方获胜" << std::endl;
-                    }
-                    else{
-                        std::cout << "黑方下的不是禁手。" << std::endl;
-                    }
-                }
-            }
-            else{
-                // 白方无禁手限制，检查是否形成五子
-                bool hasFiveFlag = false;
-                for(auto &dir : DIRECTIONS){
-                    if(hasFive(gb, x, y, color_input, dir)){
-                        hasFiveFlag = true;
-                        break;
-                    }
-                }
-                if(hasFiveFlag){
-                    std::cout << "白方形成五子，白方获胜" << std::endl;
-                }
-                else{
-                    std::cout << "白方下的不是五子。" << std::endl;
-                }
-            }
-        }
-        else if(choice ==2){
-            // 保存棋盘到文件
-            std::string filename;
-            std::cout << "请输入要保存的文件名（使用.sago后缀）：";
-            std::cin >> filename;
-            // 检查文件后缀
-            if(filename.length() <5 || filename.substr(filename.length()-5) != ".sago"){
-                std::cout << "文件名必须以.sago结尾。" << std::endl;
-                continue;
-            }
-            if(gb.saveToFile(filename)){
-                std::cout << "棋盘已保存到文件: " << filename << std::endl;
-            }
-            else{
-                std::cout << "棋盘保存失败。" << std::endl;
-            }
-        }
-        else if(choice ==3){
-            // 从文件加载棋盘
-            std::string filename;
-            std::cout << "请输入要加载的文件名（.sago）：";
-            std::cin >> filename;
-            if(gb.loadFromFile(filename)){
-                std::cout << "棋盘已从文件加载。" << std::endl;
-            }
-            else{
-                std::cout << "棋盘加载失败。" << std::endl;
-            }
-        }
-        else if(choice ==4){
-            // 打印棋盘
-            gb.printBoard();
-        }
-        else if(choice ==5){
-            // 退出程序
-            std::cout << "退出程序。" << std::endl;
-            break;
-        }
-        else{
-            std::cout << "无效的选择，请重新输入。" << std::endl;
-        }
+    // 向负方向计数
+    i = x - dx; j = y - dy;
+    while(i >=0 && i < size && j >=0 && j < size && board[i][j] == color){
+        count++;
+        i -= dx;
+        j -= dy;
     }
-
-    return 0;
+    return count ==5;
 }
 
-void pauseBeforeUpdate() 
+/**
+ * @brief 检查当前落子是否形成长连（超过五子）。
+ * @param x 行坐标。
+ * @param y 列坐标。
+ * @param color 棋子的颜色。
+ * @param dir 方向向量。
+ * @return 形成长连返回true，否则返回false。
+ */
+bool GomokuBoard::hasOverFive(int x, int y, int color, const std::pair<int, int>& dir) const{
+    int dx = dir.first, dy = dir.second;
+    int count =1;
+    // 向正方向计数
+    int i = x + dx, j = y + dy;
+    while(i >=0 && i < size && j >=0 && j < size && board[i][j] == color){
+        count++;
+        i += dx;
+        j += dy;
+    }
+    // 向负方向计数
+    i = x - dx; j = y - dy;
+    while(i >=0 && i < size && j >=0 && j < size && board[i][j] == color){
+        count++;
+        i -= dx;
+        j -= dy;
+    }
+    return count >5;
+}
+
+/**
+ * @brief 判断活四。
+ * @param x 行坐标。
+ * @param y 列坐标。
+ * @param color 棋子的颜色。
+ * @param dir 方向向量。
+ * @return 是活四返回true，否则返回false。
+ */
+bool GomokuBoard::isLiveFour(int x, int y, int color, const std::pair<int, int>& dir) const{
+    // 活四的定义：四个连续的棋子，两端均为空位
+    int dx = dir.first, dy = dir.second;
+    int count =1;
+    // 向正方向计数
+    int i = x + dx, j = y + dy;
+    while(i >=0 && i < size && j >=0 && j < size && board[i][j] == color){
+        count++;
+        i += dx;
+        j += dy;
+    }
+    // 向负方向计数
+    i = x - dx; j = y - dy;
+    while(i >=0 && i < size && j >=0 && j < size && board[i][j] == color){
+        count++;
+        i -= dx;
+        j -= dy;
+    }
+    if(count !=4){
+        return false;
+    }
+
+    // 检查两端是否为空
+    int end1_x = x + 4*dx + dx;
+    int end1_y = y + 4*dy + dy;
+    bool end1_empty = (end1_x >=0 && end1_x < size && end1_y >=0 && end1_y < size && board[end1_x][end1_y] ==0);
+
+    int end2_x = x - dx;
+    int end2_y = y - dy;
+    bool end2_empty = (end2_x >=0 && end2_x < size && end2_y >=0 && end2_y < size && board[end2_x][end2_y] ==0);
+
+    return end1_empty && end2_empty;
+}
+
+/**
+ * @brief 判断活三。
+ * @param x 行坐标。
+ * @param y 列坐标。
+ * @param color 棋子的颜色。
+ * @param dir 方向向量。
+ * @return 是活三返回true，否则返回false。
+ */
+bool GomokuBoard::isLiveThree(int x, int y, int color, const std::pair<int, int>& dir) const{
+    // 活三的定义：三个连续的棋子，两端均为空位
+    int dx = dir.first, dy = dir.second;
+    int count =1;
+    // 向正方向计数
+    int i = x + dx, j = y + dy;
+    while(i >=0 && i < size && j >=0 && j < size && board[i][j] == color){
+        count++;
+        i += dx;
+        j += dy;
+    }
+    // 向负方向计数
+    i = x - dx; j = y - dy;
+    while(i >=0 && i < size && j >=0 && j < size && board[i][j] == color){
+        count++;
+        i -= dx;
+        j -= dy;
+    }
+    if(count !=3){
+        return false;
+    }
+
+    // 检查两端是否为空
+    int end1_x = x + 3*dx + dx;
+    int end1_y = y + 3*dy + dy;
+    bool end1_empty = (end1_x >=0 && end1_x < size && end1_y >=0 && end1_y < size && board[end1_x][end1_y] ==0);
+
+    int end2_x = x - dx;
+    int end2_y = y - dy;
+    bool end2_empty = (end2_x >=0 && end2_x < size && end2_y >=0 && end2_y < size && board[end2_x][end2_y] ==0);
+
+    return end1_empty && end2_empty;
+}
+
+/**
+ * @brief 统计活四的数量。
+ * @param x 行坐标。
+ * @param y 列坐标。
+ * @param color 棋子的颜色。
+ * @return 活四数量。
+ */
+int GomokuBoard::countLiveFours(int x, int y, int color) const{
+    int count =0;
+    for(auto &dir : DIRECTIONS){
+        if(isLiveFour(x, y, color, dir)){
+            count++;
+        }
+    }
+    return count;
+}
+
+/**
+ * @brief 统计活三的数量。
+ * @param x 行坐标。
+ * @param y 列坐标。
+ * @param color 棋子的颜色。
+ * @return 活三数量。
+ */
+int GomokuBoard::countLiveThrees(int x, int y, int color) const{
+    int count =0;
+    for(auto &dir : DIRECTIONS){
+        if(isLiveThree(x, y, color, dir)){
+            count++;
+        }
+    }
+    return count;
+}
+
+/**
+ * @brief 统计三个三的数量。
+ * @param x 行坐标。
+ * @param y 列坐标。
+ * @param color 棋子的颜色。
+ * @return 三个三的数量。
+ */
+int GomokuBoard::countTripleThrees(int x, int y, int color) const{
+    // 检查有多少个方向上存在活三
+    int count=0;
+    for(auto &dir:DIRECTIONS){
+        if(isLiveThree(x, y, color, dir)){
+            count++;
+        }
+    }
+    return count;  
+}
+
+/**
+ * @brief 统计三个四的数量。
+ * @param x 行坐标。
+ * @param y 列坐标。
+ * @param color 棋子的颜色。
+ * @return 三个四的数量。
+ */
+int GomokuBoard::countTripleFours(int x, int y, int color) const{
+    // 检查有多少个方向上存在活四
+    int count=0;
+    for(auto &dir:DIRECTIONS){
+        if(isLiveFour(x, y, color, dir)){
+            count++;
+        }
+    }
+    return count; 
+}
+
+/**
+ * @brief 检查当前落子是否形成五子。
+ * @param x 行坐标。
+ * @param y 列坐标。
+ * @param color 棋子的颜色。
+ * @return 形成五子返回true，否则返回false。
+ */
+bool GomokuBoard::checkWin(int x, int y, int color) const{
+    for(const auto& dir : DIRECTIONS){
+        if(hasFive(x, y, color, dir)){
+            return true;
+        }
+    }
+    return false;
+}
+
+/**
+ * @brief 检查是否平局。
+ * @return 平局返回true，否则返回false。
+ */
+bool GomokuBoard::isDraw() const{
+    for(int x =0; x < size; ++x){
+        for(int y =0; y < size; ++y){
+            if(board[x][y] ==0){
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+int input_sizeofboard()
 {
-    cout << "按回车键继续..." << endl;
-    cin.ignore(); // 忽略缓冲区
-    cin.get();    // 等待用户输入
+    int Board_size;
+    while(true)
+    {
+        cout << "请输入棋盘的大小:" << endl;
+        cin >> Board_size;
+        if(Board_size > 0)
+        {
+            break;
+        }
+        cout << "输入无效，请重试。" << endl;
+    }
+    return Board_size;
 }
