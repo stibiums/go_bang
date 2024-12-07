@@ -3,14 +3,12 @@
 #include <windows.h>
 #include "menu.hpp"
 #include "boardlaw.hpp"
-
+#include "fio.hpp"
 
 using namespace std;
 
-
 int main(void)
 {
-
     SetConsoleOutputCP(65001); // 设置控制台输出为 UTF-8,防止输出出现乱码
 
     bool PlayerType[3] = {false, false, false}; // 记录玩家的类型，true代表AI，false代表人类玩家
@@ -55,27 +53,65 @@ int main(void)
                 continue;
             }
 
+            if(x == -2 && y == -2){
+                // 保存游戏
+                std::string filename;
+                cout << "请输入保存文件名: ";
+                cin >> filename;
+                filename+=".gob";
+                if(gb.saveToFile(filename)){
+                    cout << "游戏已成功保存到 " << filename << endl;
+                }
+                else{
+                    cout << "游戏保存失败。" << endl;
+                }
+                continue;
+            }
+
+            if(x == -3 && y == -3){
+                // 加载游戏
+                std::string filename;
+                cout << "请输入加载文件名: ";
+                cin >> filename;
+                filename+=".gob";
+                if(gb.loadFromFile(filename)){
+                    cout << "游戏已成功从 " << filename << " 加载。" << endl;
+                    gb.printBoard();
+                }
+                else{
+                    cout << "游戏加载失败。" << endl;
+                }
+                continue;
+            }
+
+            if(x==-4 && y == -4)
+            {
+                system("cls");
+                break;
+            }
+
             if(gb.isValidMove(x, y))
             {
-                // 检查禁手或胜利
-                // 落子前先检查禁手
-                if(gb.isForbiddenMove(x, y, current_Player)){
-                    // 对黑方落子，如果禁手则黑方判负
-                    if(current_Player == 1){
-                        cout << "黑方下出禁手，白方获胜" << endl;
-                        break;
-                    }
+                // 临时落子
+                gb.tempPlace(x, y, current_Player);
+
+                // 检查禁手
+                if(current_Player == 1 && gb.isForbiddenMove(x, y, current_Player)){
+                    // 禁手，恢复到之前的状态
+                    gb.restoreTemp(x, y);
+                    cout << "黑方下出禁手，白方获胜" << endl;
+                    break;
                 }
 
-                // 落子
-                gb.placePiece(currentPlaytType, current_Player, x, y);
+                // 确认落子
+                gb.confirmTemp(x, y, current_Player);
                 gb.printBoard();
-                
+
                 // 检查是否胜利
                 if(gb.checkWin(x, y, current_Player)) {
                     if(current_Player == 1) cout << "黑方获胜" << endl;
                     else cout << "白方获胜" << endl;
-                    break;;
+                    break;
                 }
 
                 // 检查是否平局

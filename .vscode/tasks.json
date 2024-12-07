@@ -9,6 +9,7 @@
                 "main.cpp",
                 "boardlaw.cpp",
                 "aimove.cpp",
+                "fio.cpp",
                 //"board.cpp",
                 //"law.cpp",
                 "menu.cpp",

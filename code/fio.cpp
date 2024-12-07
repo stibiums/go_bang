@@ -28,6 +28,7 @@ int GomokuBoard::charToCell(char c) const {
     }
 }
 
+
 // 实现保存棋盘到二进制文件
 bool GomokuBoard::saveToFile(const std::string& filename) const{
     std::ofstream ofs(filename, std::ios::binary);
@@ -64,13 +65,13 @@ bool GomokuBoard::loadFromFile(const std::string& filename){
     }
     // 读取棋盘内容
     std::vector<std::vector<int>> new_board(new_size, std::vector<int>(new_size, 0));
-    for(int y =0; y < new_size; ++y){
+     for(int y =0; y < new_size; ++y){
         for(int x =0; x < new_size; ++x){
             char c;
             ifs.read(&c, sizeof(c));
             new_board[y][x] = charToCell(c);
-        }
-    }
+         }
+     }
     if(ifs.fail()){
         std::cerr << "棋盘数据读取失败，文件可能已损坏。" << std::endl;
         return false;

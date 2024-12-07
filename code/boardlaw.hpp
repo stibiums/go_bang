@@ -17,9 +17,9 @@ public:
     int size; // 棋盘大小
     std::vector<std::vector<int>> board; // 棋盘二维数组
     std::vector<std::string> horizontal_lines; // 水平线缓存
-    std::vector<std::string> vertical_lines; // 垂直线缓存
-    std::vector<std::string> main_diagonals; // 主对角线缓存
-    std::vector<std::string> anti_diagonals; // 反对角线缓存
+    std::vector<std::string> vertical_lines;   // 垂直线缓存
+    std::vector<std::string> main_diagonals;   // 主对角线缓存
+    std::vector<std::string> anti_diagonals;   // 反对角线缓存
 
     std::stack<std::vector<std::vector<int>>> undoStack; // 撤销栈
     std::stack<std::vector<std::vector<int>>> redoStack; // 重做栈
@@ -105,7 +105,7 @@ public:
     bool isForbiddenMove(int x, int y, int color) const;
 
     /**
-     * @brief 检查当前落子是否形成五子。
+     * @brief 检查当前落子是否形成五子连珠。
      * @param x 行坐标。
      * @param y 列坐标。
      * @param color 棋子的颜色。
@@ -129,16 +129,39 @@ public:
     /**
      * @brief 从二进制文件加载棋盘
      * @param filename 文件名
-     * @return 成功返回true，否则返回false
+     * @return 成功返回true，否则返回false。
      */
     bool loadFromFile(const std::string& filename);
 
     /**
-     * @brief 方向向量：水平、垂直、主对角线、反对角线
+     * @brief 用于判断的方向向量（横、纵、主对角、反对角）
      */
     const std::vector<std::pair<int, int>> DIRECTIONS = {
         {1, 0}, {0, 1}, {1, 1}, {1, -1}
     };
+
+    /**
+     * @brief 临时放置棋子，用于先行进行禁手检测。
+     * @param x 行坐标。
+     * @param y 列坐标。
+     * @param color 棋子的颜色。
+     */
+    void tempPlace(int x, int y, int color);
+
+    /**
+     * @brief 恢复临时落子操作。
+     * @param x 行坐标。
+     * @param y 列坐标。
+     */
+    void restoreTemp(int x, int y);
+
+    /**
+     * @brief 确认临时落子为正式落子（更新撤销栈和缓存）。
+     * @param x 行坐标。
+     * @param y 列坐标。
+     * @param color 棋子的颜色。
+     */
+    void confirmTemp(int x, int y, int color);
 
 private:
     /**
@@ -242,6 +265,28 @@ private:
      * @return 对应的单元格值
      */
     int charToCell(char c) const;
+
+    /**
+     * @brief 辅助函数：从棋盘中提取某条线的字符串
+     * @param board 棋盘
+     * @param size 棋盘大小
+     * @param x 起点x
+     * @param y 起点y
+     * @param dx 方向向量x
+     * @param dy 方向向量y
+     * @return 提取的线字符串
+     */
+    std::string extractLine(const std::vector<std::vector<int>>& board, int size, int x, int y, int dx, int dy) const;
+
+    /**
+     * @brief 辅助函数：给定一条线的字符串和其中点(x,y)在该线中的索引，检查禁手
+     * @param line 线字符串
+     * @param color 棋子颜色字符 'X' or 'O'
+     * @return 是否存在禁手模式
+     */
+    bool checkLineForForbidden(const std::string& line, char color) const;
 };
+
+int input_sizeofboard();
 
 #endif
