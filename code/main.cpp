@@ -4,7 +4,7 @@
 #include <vector>
 #include <windows.h>
 #include "menu.hpp"
-#include "boardlaw.hpp"
+#include "boards.hpp"
 #include "fio.hpp"
 
 using namespace std;
