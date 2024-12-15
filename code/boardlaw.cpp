@@ -58,7 +58,7 @@ bool GomokuBoard::checkLineForForbidden(const string& line, char color) const {
 
     // Define pattern matching
     // For simplification, use basic patterns
-    // Active four patterns: "XXX.X", "XX.XX", "X.XXX"
+    // Active four patterns: "XXXX.", ".XXXX", "XXX.X", "XX.XX", "X.XXX"
     // Active three patterns: ".XX.X.", ".X.XX."
 
     // Active four patterns (simplified)
@@ -102,11 +102,14 @@ bool GomokuBoard::checkLineForForbidden(const string& line, char color) const {
     return false;
 }
 
-GomokuBoard::GomokuBoard(int board_size) : size(board_size), board(board_size, vector<int>(board_size, 0)),
-    horizontal_lines(board_size, string(board_size, '.')),
-    vertical_lines(board_size, string(board_size, '.')),
-    main_diagonals(2 * board_size -1, string(board_size, '.')),
-    anti_diagonals(2 * board_size -1, string(board_size, '.'))
+GomokuBoard::GomokuBoard(int board_size) 
+    : size(board_size), 
+      board(board_size, vector<int>(board_size, 0)),
+      horizontal_lines(board_size, string(board_size, '.')),
+      vertical_lines(board_size, string(board_size, '.')),
+      main_diagonals(2 * board_size -1, string(board_size, '.')),
+      anti_diagonals(2 * board_size -1, string(board_size, '.')),
+      aiMove(board_size) // 初始化 AIMove 实例
 {
     initializeCache();
 }
@@ -141,7 +144,7 @@ void GomokuBoard::updateAllCache(int x, int y){
 }
 
 void GomokuBoard::printBoard() const{
-    system("cls");
+    system("cls"); // 清屏
     cout << "\t";
     for(int y=0; y < size; y++) cout << y << "\t";
     cout << endl;
@@ -266,7 +269,7 @@ pair<int, int> GomokuBoard::humanInput(){
 }
 
 pair<int, int> GomokuBoard::aiInput(int color){
-    return AIMove::getBestMove(*this, color);
+    return aiMove.getBestMove(*this, color);
 }
 
 void GomokuBoard::tempPlace(int x, int y, int color) {
