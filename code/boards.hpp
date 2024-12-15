@@ -1,6 +1,6 @@
 // boardlaw.hpp
-#ifndef BOARDLAW_HPP
-#define BOARDLAW_HPP
+#ifndef BOARDS_HPP
+#define BOARDS_HPP
 
 #include "aimove.hpp" // 包含 AIMove 的声明
 #include <vector>
@@ -21,7 +21,7 @@ public:
     std::pair<int, int> aiInput(int color);
     void placePiece(bool currentPlayerType, int color, int x, int y);
     bool checkWin(int x, int y, int color) const;
-    bool isForbiddenMove(int x, int y, int color) const;
+   // bool isForbiddenMove(int x, int y, int color) const;
     bool isValidMove(int x, int y) const;
     void printBoard() const;
     bool undo();
@@ -63,19 +63,12 @@ private:
     void initializeCache();
     void updateAllCache(int x, int y);
     bool hasFive(int x, int y, int color, const std::pair<int, int>& dir) const;
-    bool hasOverFive(int x, int y, int color, const std::pair<int, int>& dir) const;
-    bool isLiveFour(int x, int y, int color, const std::pair<int, int>& dir) const;
-    bool isLiveThree(int x, int y, int color, const std::pair<int, int>& dir) const;
-    int countLiveFours(int x, int y, int color) const;
-    int countLiveThrees(int x, int y, int color) const;
-    int countTripleThrees(int x, int y, int color) const;
-    int countTripleFours(int x, int y, int color) const;
     char cellToChar(int cell) const;
     int charToCell(char c) const;
-    std::string extractLine(const std::vector<std::vector<int>>& board, int size, int x, int y, int dx, int dy) const;
-    bool checkLineForForbidden(const std::string& line, char color) const;
+    // std::string extractLine(const std::vector<std::vector<int>>& board, int size, int x, int y, int dx, int dy) const;
+    // bool checkLineForForbidden(const std::string& line, char color) const;
 };
 
 int input_sizeofboard();
 
-#endif // BOARDLAW_HPP
+#endif 

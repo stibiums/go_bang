@@ -1,6 +1,6 @@
 // boardlaw.cpp
 
-#include "boardlaw.hpp"
+#include "boards.hpp"
 #include "aimove.hpp" 
 #include <iostream>
 #include <algorithm>
@@ -8,99 +8,99 @@
 
 using namespace std;
 
-// 辅助函数：从棋盘中提取某条线的字符串
-string GomokuBoard::extractLine(const vector<vector<int>>& board, int size, int x, int y, int dx, int dy) const {
-    // 提取包含(x,y)的整条线
-    // 向反方向走到头
-    int startX = x, startY = y;
-    while(startX - dx >=0 && startX - dx < size && startY - dy >=0 && startY - dy < size){
-        startX -= dx;
-        startY -= dy;
-    }
-    // 沿正方向收集
-    string line;
-    int curX = startX, curY = startY;
-    while(curX >=0 && curX < size && curY >=0 && curY < size){
-        char c = '.';
-        if(board[curX][curY] == 1) c = 'X';
-        else if(board[curX][curY] == 2) c = 'O';
-        line.push_back(c);
-        curX += dx; curY += dy;
-    }
-    return line;
-}
+// // 辅助函数：从棋盘中提取某条线的字符串
+// string GomokuBoard::extractLine(const vector<vector<int>>& board, int size, int x, int y, int dx, int dy) const {
+//     // 提取包含(x,y)的整条线
+//     // 向反方向走到头
+//     int startX = x, startY = y;
+//     while(startX - dx >=0 && startX - dx < size && startY - dy >=0 && startY - dy < size){
+//         startX -= dx;
+//         startY -= dy;
+//     }
+//     // 沿正方向收集
+//     string line;
+//     int curX = startX, curY = startY;
+//     while(curX >=0 && curX < size && curY >=0 && curY < size){
+//         char c = '.';
+//         if(board[curX][curY] == 1) c = 'X';
+//         else if(board[curX][curY] == 2) c = 'O';
+//         line.push_back(c);
+//         curX += dx; curY += dy;
+//     }
+//     return line;
+// }
 
-// 辅助函数：给定一条线的字符串，检查禁手
-bool GomokuBoard::checkLineForForbidden(const string& line, char color) const {
-    // 检测长连(超过五个连续color)
-    // 检测双四、双三
-    // 为了简单，这里用最基本的pattern匹配方式
-    // 连续5个及以上X为长连
-    // 四的类型可以通过找"XXXX."、".XXXX"、"XXX.X"等模式近似判断
-    // 三的类型找".XX.X."、".X.XX."一类模式判断
-    //
-    // 实际规则更复杂，这里只是示意性逻辑。
-    // 建议在实际使用中根据连珠禁手判定规则精准定义各类模式。
+// // 辅助函数：给定一条线的字符串，检查禁手
+// bool GomokuBoard::checkLineForForbidden(const string& line, char color) const {
+//     // 检测长连(超过五个连续color)
+//     // 检测双四、双三
+//     // 为了简单，这里用最基本的pattern匹配方式
+//     // 连续5个及以上X为长连
+//     // 四的类型可以通过找"XXXX."、".XXXX"、"XXX.X"等模式近似判断
+//     // 三的类型找".XX.X."、".X.XX."一类模式判断
+//     //
+//     // 实际规则更复杂，这里只是示意性逻辑。
+//     // 建议在实际使用中根据连珠禁手判定规则精准定义各类模式。
     
-    // 计数长连
-    int longestChain = 0;
-    int count=0;
-    for(auto c: line){
-        if(c == color){
-            count++;
-            if(count > longestChain) longestChain = count;
-        }
-        else{
-            count=0;
-        }
-    }
-    if(longestChain >5) return true; // 长连禁手
+//     // 计数长连
+//     int longestChain = 0;
+//     int count=0;
+//     for(auto c: line){
+//         if(c == color){
+//             count++;
+//             if(count > longestChain) longestChain = count;
+//         }
+//         else{
+//             count=0;
+//         }
+//     }
+//     if(longestChain >5) return true; // 长连禁手
 
-    // Define pattern matching
-    // For simplification, use basic patterns
-    // Active four patterns: "XXXX.", ".XXXX", "XXX.X", "XX.XX", "X.XXX"
-    // Active three patterns: ".XX.X.", ".X.XX."
+//     // Define pattern matching
+//     // For simplification, use basic patterns
+//     // Active four patterns: "XXXX.", ".XXXX", "XXX.X", "XX.XX", "X.XXX"
+//     // Active three patterns: ".XX.X.", ".X.XX."
 
-    // Active four patterns (simplified)
-    vector<string> fourPatterns = {
-        "XXXX.", ".XXXX",
-        "XXX.X",
-        "XX.XX",
-        "X.XXX"
-    };
+//     // Active four patterns (simplified)
+//     vector<string> fourPatterns = {
+//         "XXXX.", ".XXXX",
+//         "XXX.X",
+//         "XX.XX",
+//         "X.XXX"
+//     };
 
-    // Active three patterns (simplified)
-    vector<string> threePatterns = {
-        ".XX.X.",
-        ".X.XX."
-    };
+//     // Active three patterns (simplified)
+//     vector<string> threePatterns = {
+//         ".XX.X.",
+//         ".X.XX."
+//     };
 
-    // Count active fours
-    int fourCount=0;
-    for(auto &pat: fourPatterns){
-        size_t pos = line.find(pat);
-        while(pos != string::npos){
-            fourCount++;
-            pos = line.find(pat, pos+1);
-        }
-    }
+//     // Count active fours
+//     int fourCount=0;
+//     for(auto &pat: fourPatterns){
+//         size_t pos = line.find(pat);
+//         while(pos != string::npos){
+//             fourCount++;
+//             pos = line.find(pat, pos+1);
+//         }
+//     }
 
-    // Count active threes
-    int threeCount=0;
-    for(auto &pat: threePatterns){
-        size_t pos = line.find(pat);
-        while(pos != string::npos){
-            threeCount++;
-            pos = line.find(pat, pos+1);
-        }
-    }
+//     // Count active threes
+//     int threeCount=0;
+//     for(auto &pat: threePatterns){
+//         size_t pos = line.find(pat);
+//         while(pos != string::npos){
+//             threeCount++;
+//             pos = line.find(pat, pos+1);
+//         }
+//     }
 
-    // Determine if double four or double three
-    if(fourCount >=2) return true; // double four
-    if(threeCount >=2) return true; // double three
+//     // Determine if double four or double three
+//     if(fourCount >=2) return true; // double four
+//     if(threeCount >=2) return true; // double three
 
-    return false;
-}
+//     return false;
+// }
 
 GomokuBoard::GomokuBoard(int board_size) 
     : size(board_size), 
@@ -294,27 +294,27 @@ void GomokuBoard::confirmTemp(int x, int y, int color){
     updateAllCache(x, y);
 }
 
-bool GomokuBoard::isForbiddenMove(int x, int y, int color) const{
-    if(color !=1){
-        // 只有黑方有禁手限制
-        return false;
-    }
+// bool GomokuBoard::isForbiddenMove(int x, int y, int color) const{
+//     if(color !=1){
+//         // 只有黑方有禁手限制
+//         return false;
+//     }
 
-    // 提取当前点相关的4条线（水平、垂直、主对角、反对角）
-    char c = 'X';
-    string horiz = extractLine(board, size, x, y, 0, 1);
-    string vert = extractLine(board, size, x, y, 1, 0);
-    string diag_main = extractLine(board, size, x, y, 1, 1);
-    string diag_anti = extractLine(board, size, x, y, 1, -1);
+//     // 提取当前点相关的4条线（水平、垂直、主对角、反对角）
+//     char c = 'X';
+//     string horiz = extractLine(board, size, x, y, 0, 1);
+//     string vert = extractLine(board, size, x, y, 1, 0);
+//     string diag_main = extractLine(board, size, x, y, 1, 1);
+//     string diag_anti = extractLine(board, size, x, y, 1, -1);
 
-    // 检测四条线上是否出现禁手模式
-    if(checkLineForForbidden(horiz, c)) return true;
-    if(checkLineForForbidden(vert, c)) return true;
-    if(checkLineForForbidden(diag_main, c)) return true;
-    if(checkLineForForbidden(diag_anti, c)) return true;
+//     // 检测四条线上是否出现禁手模式
+//     if(checkLineForForbidden(horiz, c)) return true;
+//     if(checkLineForForbidden(vert, c)) return true;
+//     if(checkLineForForbidden(diag_main, c)) return true;
+//     if(checkLineForForbidden(diag_anti, c)) return true;
 
-    return false;
-}
+//     return false;
+// }
 
 bool GomokuBoard::hasFive(int x, int y, int color, const pair<int, int>& dir) const{
     int dx = dir.first, dy = dir.second;
@@ -371,3 +371,7 @@ int input_sizeofboard()
     }
     return Board_size;
 }
+
+
+
+
