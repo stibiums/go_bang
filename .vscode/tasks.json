@@ -7,9 +7,9 @@
             "command": "g++",
             "args": [
                 "main.cpp",
-                "boardlaw.cpp",
+                "boards.cpp",
                 "aimove.cpp",
-                "fio.cpp",
+                //"fio.cpp",
                 "zobrist.cpp",
                 //"board.cpp",
                 //"law.cpp",

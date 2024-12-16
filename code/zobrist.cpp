@@ -1,6 +1,6 @@
 // zobrist.cpp
 #include "zobrist.hpp"
-#include "boardlaw.hpp" // 包含 GomokuBoard 的完整定义
+#include "boards.hpp" // 包含 GomokuBoard 的完整定义
 #include <chrono>
 
 ZobristHash::ZobristHash(int boardSize) : size(boardSize) {

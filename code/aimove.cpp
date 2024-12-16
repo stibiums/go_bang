@@ -1,7 +1,7 @@
 // aimove.cpp
 
 #include "aimove.hpp"
-#include "boardlaw.hpp" // 包含 GomokuBoard 的完整定义
+#include "boards.hpp" // 包含 GomokuBoard 的完整定义
 #include <algorithm>
 #include <cmath>
 #include <limits>
