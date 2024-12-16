@@ -12,7 +12,7 @@
                 //"fio.cpp",
                 "zobrist.cpp",
                 //"board.cpp",
-                //"law.cpp",
+                "law.cpp",
                 "menu.cpp",
                 //"aimodel.cpp",
                 "-o",

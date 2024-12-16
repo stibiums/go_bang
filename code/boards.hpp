@@ -4,6 +4,7 @@
 #include <vector>
 #include <string>
 #include "aimove.hpp"
+#include "law.hpp"
 #include <stack>
 #include <utility>
 #include <fstream>
@@ -27,7 +28,7 @@ public:
     void placePiece(bool currentPlayerType, int color, int x, int y);
     bool isValidMove(int x, int y) const;
     bool checkWin(int x, int y, int color) const;    // 是否连成 == 5
-    bool isForbiddenMove(int x, int y, int color) ; // 检测黑棋禁手 (长连 / 双四 / 双三)
+    bool isForbiddenMove(int x, int y, int color) const; // 检测黑棋禁手 (长连 / 双四 / 双三)
     bool isDraw() const; // 检测平局
 
     // 棋盘打印、交互
@@ -57,7 +58,8 @@ public:
     std::vector<std::vector<int>> board;
     int size;
     // 用于记录最后一步棋的信息
-    int last_piece_color=0;
+    int last_piece_color=2; // 最后一步棋的类型，这里的1为黑，2为白
+    int current_color=1;
     int last_piece_x=-1;
     int last_piece_y=-1;
 

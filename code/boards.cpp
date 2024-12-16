@@ -105,6 +105,7 @@ void GomokuBoard::placePiece(bool currentPlayerType, int color, int x, int y){
     saveStateToUndo();
     clearRedoStack();
     board[x][y] = color;
+    current_color=last_piece_color;
     last_piece_color=color;
     last_piece_x=x;
     last_piece_y=y;
@@ -231,9 +232,9 @@ int input_sizeofboard()
 
 // =========== 禁手判断函数 ===========
 
-bool isForbiddenMove(int x, int y, int color) 
+bool GomokuBoard::isForbiddenMove(int x, int y, int color) const
 {
-
+    return color==1 && checkForbiddenMove(*this,x,y);
 }
 
 // =========== 文件读写函数 ===========
