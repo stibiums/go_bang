@@ -88,7 +88,11 @@ int main(void)
 
             if(x==-4 && y == -4)
             {
-                system("cls");
+                #if defined(_WIN32)
+                    system("cls"); // Windows平台清屏
+                #else
+                    system("clear"); // Linux/macOS平台清屏
+                #endif
                 break;
             }
 
