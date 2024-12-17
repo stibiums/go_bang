@@ -32,6 +32,7 @@ public:
     void placePiece(bool currentPlayerType, int color, int x, int y);
     bool isValidMove(int x, int y) const;
     bool checkWin(int x, int y, int color) const;    // 是否连成 == 5
+    bool checkWins()const;
     bool isForbiddenMove(int x, int y, int color) const; // 检测黑棋禁手 (长连 / 双四 / 双三)
     bool isDraw() const; // 检测平局
 

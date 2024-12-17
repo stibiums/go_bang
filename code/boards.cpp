@@ -182,6 +182,10 @@ void GomokuBoard::restoreTemp(int x, int y){
 void GomokuBoard::confirmTemp(int x, int y, int color){
     clearRedoStack();
     updateAllCache(x, y);
+    current_color=current_color==1?2:1;
+    last_piece_color=color;
+    last_piece_x=x;
+    last_piece_y=y;
 }
 
 bool GomokuBoard::checkWin(int x, int y, int color) const{
@@ -200,6 +204,21 @@ bool GomokuBoard::checkWin(int x, int y, int color) const{
             i-=dx; j-=dy;
         }
         if(count>=5) return true;
+    }
+    return false;
+}
+
+bool GomokuBoard::checkWins()const
+{
+    for(int i=0;i<size;i++)
+    {
+        for(int j=0;j<size;j++)
+        {
+            if(board[i][j]!=0 && checkWin(i,j,board[i][j]))
+            {
+                return true;
+            }
+        }
     }
     return false;
 }
