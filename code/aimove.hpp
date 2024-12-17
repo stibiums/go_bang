@@ -2,32 +2,83 @@
 #ifndef AIMOVE_HPP
 #define AIMOVE_HPP
 
-#include "zobrist.hpp"
-#include <utility>
-#include <unordered_map>
-#include <list>
 #include <vector>
+#include <utility>
+#include <map>
+#include <string> // 添加这一行
+#include "boards.hpp"
 
 // 前向声明 GomokuBoard 类
 class GomokuBoard;
 
-class AIMove {
+class AImove {
 public:
-    AIMove(int boardSize);
-    std::pair<int, int> getBestMove(const GomokuBoard& board, int color);
-    int evaluateBoard(const GomokuBoard& board, int color);
-    int minimax(GomokuBoard& board, int depth, bool maximizingPlayer, int alpha, int beta, int color);
-    std::vector<std::pair<int, int>> generateMoves(const GomokuBoard& board, int color);
+    AImove();
+
+    std::pair<int,int> PlayChess(GomokuBoard &board);
+    
+    int ComputePointScore(GomokuBoard &gd, int x, int y) const;
 
 private:
-    // 置换表：哈希值 -> 评估分数
-    std::unordered_map<uint64_t, int> transpositionTable;
-    std::list<uint64_t> transpositionOrder; // 用于FIFO清理
-    size_t maxTranspositionTableSize = 1000000; // 设置一个合理的最大容量
-    ZobristHash zobrist;
 
-    // 评估函数的辅助函数
-    int evaluatePlayer(const GomokuBoard& board, int player, int FIVE, int OPEN_FOUR, int CLOSED_FOUR, int OPEN_THREE, int CLOSED_THREE, int DOUBLE_OPEN_THREE);
+    std::map<std::string, int> score_map_for_white = {
+        {"2",       10},
+        {"22",      100},
+        {"222",     5000},
+        {"2222",    8000},
+
+        {"21",       5},
+        {"221",      80},
+        {"2221",    3000},
+        {"22221",  10000},
+
+        {"12",      11},
+        {"122",     110},
+        {"1222",   1100},
+        {"12222", 11000},
+
+        {"1",       20},
+        {"11",     200},
+        {"111",   4500},
+        {"1111", 10000},
+
+        {"112",    100},
+        {"1112",  3000},
+        {"11112", 12000},
+        {"211",      5},
+        {"2111",    500},
+        {"21111", 10000}
+    };
+
+    std::map<std::string, int> score_map_for_black = {
+        {"1",       10},
+        {"11",     100},
+        {"111",    5000},
+        {"1111",   8000},
+
+        {"12",        5},
+        {"112",      80},
+        {"1112",   3000},
+        {"11112", 10000},
+
+        {"21",       11},
+        {"211",     110},
+        {"2111",   1100},
+        {"21111", 11000},
+
+        {"2",       20},
+        {"22",     200},
+        {"222",   4500},
+        {"2222", 10000},
+
+        {"221",    100},
+        {"2221",  3000},
+        {"22221", 12000},
+        {"122",        5},
+        {"1222",    500},
+        {"12222", 10000}
+    };
+
 };
 
 #endif // AIMOVE_HPP

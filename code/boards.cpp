@@ -15,7 +15,8 @@ GomokuBoard::GomokuBoard(int board_size)
       vertical_lines(board_size, string(board_size, '.')),
       main_diagonals(2*board_size -1, string(board_size, '.')),
       anti_diagonals(2*board_size -1, string(board_size, '.')),
-      aiMove(board_size)
+      aimove(std::make_unique<AImove>()) // 初始化aimove
+      
 {
     // AI / 五连检测方向
     DIRECTIONS = { {1,0},{0,1},{1,1},{1,-1} };
@@ -105,7 +106,7 @@ void GomokuBoard::placePiece(bool currentPlayerType, int color, int x, int y){
     saveStateToUndo();
     clearRedoStack();
     board[x][y] = color;
-    current_color=last_piece_color;
+    current_color=current_color==1?2:1;
     last_piece_color=color;
     last_piece_x=x;
     last_piece_y=y;
@@ -143,7 +144,7 @@ bool GomokuBoard::redo(){
 pair<int,int> GomokuBoard::inputfunction(bool currentPlayerType, int currentPlayer){
     if(currentPlayerType){
         cout << "AI进行输入" << endl;
-        return aiInput(currentPlayer);
+        return aiInput();
     } else {
         cout << "人类进行输入" << endl;
         return humanInput();
@@ -161,8 +162,8 @@ pair<int,int> GomokuBoard::humanInput(){
     return {x,y};
 }
 
-pair<int,int> GomokuBoard::aiInput(int color){
-    return aiMove.getBestMove(*this, color);
+pair<int,int> GomokuBoard::aiInput(){
+    return aimove->PlayChess(*this);
 }
 
 void GomokuBoard::tempPlace(int x, int y, int color){
@@ -286,5 +287,6 @@ bool GomokuBoard::loadFromFile(const std::string& filename){
     return true;
 }
 
-
+// 显式定义析构函数
+GomokuBoard::~GomokuBoard() = default;
 

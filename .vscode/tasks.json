@@ -10,7 +10,7 @@
                 "boards.cpp",
                 "aimove.cpp",
                 //"fio.cpp",
-                "zobrist.cpp",
+                //"zobrist.cpp",
                 //"board.cpp",
                 "law.cpp",
                 "menu.cpp",

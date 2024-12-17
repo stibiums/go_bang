@@ -243,6 +243,7 @@
 
 
 #include "law.hpp"
+#include "boards.hpp"
 #include<iostream>
 #include<vector>
 

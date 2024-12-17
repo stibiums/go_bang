@@ -24,6 +24,8 @@
 #ifndef LAW_HPP
 #define LAW_HPP
 
+class GomokuBoard;
+
 #include <vector>
 #include "boards.hpp"
 using namespace std;

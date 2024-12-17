@@ -3,15 +3,16 @@
 
 #include <vector>
 #include <string>
-#include "aimove.hpp"
+
 #include "law.hpp"
 #include <stack>
 #include <utility>
 #include <fstream>
+#include<memory>
 
 // 前向声明，避免循环依赖。若你的项目需要使用 AIMove 具体定义，
 // 可在本文件或外部 #include "aimove.hpp"
-class AIMove;
+class AImove;
 
 /**
  * @brief 五子棋棋盘类，用于管理棋盘状态、落子、判断胜负及完整的黑棋禁手检测。
@@ -21,8 +22,11 @@ public:
     // 构造函数
     GomokuBoard(int board_size);
 
+     // 显式声明析构函数
+    ~GomokuBoard();
+
     // AI 落子接口
-    std::pair<int,int> aiInput(int color);
+    std::pair<int,int> aiInput();
 
     // 下棋相关操作
     void placePiece(bool currentPlayerType, int color, int x, int y);
@@ -75,7 +79,7 @@ private:
     std::stack<std::vector<std::vector<int>>> redoStack;
 
     // AI算法类
-    AIMove aiMove;
+    std::unique_ptr<AImove> aimove;
 
     // 初始化和更新缓存
     void initializeCache();
