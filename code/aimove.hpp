@@ -120,7 +120,8 @@ class AImove {
             {"blockFour",100000},
             {"three",1000},
             {"blockThree",150},
-            {"two",100}
+            {"two",100},
+            {"unknown",0}
         };
     private:
         // 获取某个方向的棋形

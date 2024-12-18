@@ -188,6 +188,16 @@ void GomokuBoard::confirmTemp(int x, int y, int color){
     last_piece_y=y;
 }
 
+void GomokuBoard::makeMove(int x, int y, int color) {
+    board[x][y] = color;
+    updateAllCache(x, y);
+}
+
+void GomokuBoard::unmakeMove(int x, int y) {
+    board[x][y] = 0;
+    updateAllCache(x, y);
+}
+
 bool GomokuBoard::checkWin(int x, int y, int color) const{
     // 只要有>=5连就算赢
     for(auto &dir : DIRECTIONS){

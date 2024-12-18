@@ -25,21 +25,21 @@ pair<int,int> AImove::PlayChess(GomokuBoard &gd) {
         best_y = gd.size/2;
     } else {
 
-        // Position aiinput=findBestMove(gd,2,gd.current_color);
-        // best_x=aiinput.x;
-        // best_y=aiinput.y;
-        for (x = 0; x < gd.size; x++) {
-            for (y = 0; y < gd.size; y++) {
-                if (gd.board[x][y] == 0) {
-                    current_point_score = ComputePointScore(gd, x, y);
-                    if (current_point_score > max_score) {
-                        max_score = current_point_score;
-                        best_x = x;
-                        best_y = y;
-                    }
-                }
-            }
-        }
+        Position aiinput=findBestMove(gd,4,gd.current_color);
+        best_x=aiinput.x;
+        best_y=aiinput.y;
+        // for (x = 0; x < gd.size; x++) {
+        //     for (y = 0; y < gd.size; y++) {
+        //         if (gd.board[x][y] == 0) {
+        //             current_point_score = ComputePointScore(gd, x, y);
+        //             if (current_point_score > max_score) {
+        //                 max_score = current_point_score;
+        //                 best_x = x;
+        //                 best_y = y;
+        //             }
+        //         }
+        //     }
+        // }
     }
 
     cout << "电脑落子坐标 :" <<best_x<<" "<<best_y<<endl;
@@ -58,15 +58,15 @@ pair<int,int> AImove::PlayChess(GomokuBoard &gd) {
         int opponent = (player == 1) ? 2 : 1;
         if (maximizingPlayer) {
             int maxEval = std::numeric_limits<int>::min();
-            std::vector<Position> possibleMoves = generateAndScorePossibleMoves(gd);
+            std::vector<Position> possibleMoves = generateAndScorePossibleMoves(gd,1);
             for (const auto& move : possibleMoves) {
-                gd.tempPlace(move.x, move.y, player);
+                gd.makeMove(move.x, move.y, player);
                 if (gd.checkWin(move.x, move.y, player)) {
-                    gd.restoreTemp(move.x, move.y);
-                    return score_map["five"];
+                    gd.unmakeMove(move.x, move.y);
+                    return (maximizingPlayer) ? score_map["five"] : -score_map["five"];
                 }
                 int eval = minimax(gd, depth - 1, alpha, beta, false, player);
-                gd.restoreTemp(move.x, move.y);
+                gd.unmakeMove(move.x, move.y);
                 maxEval = std::max(maxEval, eval);
                 alpha = std::max(alpha, eval);
                 if (beta <= alpha) {
@@ -76,15 +76,15 @@ pair<int,int> AImove::PlayChess(GomokuBoard &gd) {
             return maxEval;
         } else {
             int minEval = std::numeric_limits<int>::max();
-            std::vector<Position> possibleMoves = generateAndScorePossibleMoves(gd);
+            std::vector<Position> possibleMoves = generateAndScorePossibleMoves(gd,1);
             for (const auto& move : possibleMoves) {
-                gd.tempPlace(move.x, move.y, opponent);
-                if (gd.checkWin(move.x, move.y, player)) {
-                    gd.restoreTemp(move.x, move.y);
-                    return score_map["five"];
+                gd.makeMove(move.x, move.y, opponent);
+                if (gd.checkWin(move.x, move.y, opponent)) {
+                    gd.unmakeMove(move.x, move.y);
+                    return (maximizingPlayer) ? score_map["five"] : -score_map["five"];
                 }
                 int eval = minimax(gd, depth - 1, alpha, beta, true, player);
-                gd.restoreTemp(move.x, move.y);
+                gd.unmakeMove(move.x, move.y);
                 minEval = std::min(minEval, eval);
                 beta = std::min(beta, eval);
                 if (beta <= alpha) {
@@ -97,27 +97,30 @@ pair<int,int> AImove::PlayChess(GomokuBoard &gd) {
 
 
     Position AImove::findBestMove(GomokuBoard& gd, int depth, int player) {
-        int bestScore = std::numeric_limits<int>::min();
+         int bestScore = std::numeric_limits<int>::min();
         Position bestMove = { -1, -1, 0 };
 
-        std::vector<Position> possibleMoves = generateAndScorePossibleMoves(gd);
+        std::vector<Position> possibleMoves = generateAndScorePossibleMoves(gd, 1);
 
-        for (const auto& move : possibleMoves) {
-            gd.tempPlace(move.x, move.y, player);
+        // 限制只考虑前20个走法
+        int limit = std::min(static_cast<int>(possibleMoves.size()), 20);
+        for (int i = 0; i < limit; ++i) {
+            const auto& move = possibleMoves[i];
+            gd.makeMove(move.x, move.y, player);
             if (gd.checkWin(move.x, move.y, player)) {
-                gd.restoreTemp(move.x, move.y);
+                gd.unmakeMove(move.x, move.y);
                 return move; // 立即返回胜利走法
             }
             int score = minimax(gd, depth - 1, std::numeric_limits<int>::min(), std::numeric_limits<int>::max(), false, player);
-            gd.restoreTemp(move.x, move.y);
+            gd.unmakeMove(move.x, move.y);
 
             if (score > bestScore) {
                 bestScore = score;
                 bestMove = move;
             }
-        }
+    }
 
-        return bestMove;
+    return bestMove;
     }
 
 
@@ -155,9 +158,9 @@ std::vector<Position> AImove::generateAndScorePossibleMoves(GomokuBoard& gd, int
     // 对每个走法进行评分
     for (auto& move : possible_moves) {
         int x=move.x,y=move.y;
-        gd.tempPlace(x,y,gd.current_color);
+        gd.makeMove(x,y,gd.current_color);
         move.score = ComputeTotalScore(gd);
-        gd.restoreTemp(x,y);
+        gd.unmakeMove(x,y);
     }
 
     // 按评分从高到低排序
@@ -174,13 +177,21 @@ std::vector<Position> AImove::generateAndScorePossibleMoves(GomokuBoard& gd, int
 
 int AImove::ComputeTotalScore(GomokuBoard &gd) const
 {
-    int score=0;
-    for(int i=0;i<gd.size;i++)
-    {
-        for(int j=0;j<gd.size;j++)
-        {
-            if(gd.board[i][j]==0)continue;
-            score+=ComputePointScore(gd, i, j);
+    int score = 0;
+    // 仅评估最近落子附近的区域
+    int lastX = gd.last_piece_x;
+    int lastY = gd.last_piece_y;
+    if (lastX == -1 || lastY == -1) {
+        // 如果没有落子，返回0
+        return 0;
+    }
+
+    // 定义评估范围，例如距离3以内
+    int range = 3;
+    for(int i = std::max(0, lastX - range); i <= std::min(gd.size - 1, lastX + range); i++) {
+        for(int j = std::max(0, lastY - range); j <= std::min(gd.size - 1, lastY + range); j++) {
+            if(gd.board[i][j] == 0) continue;
+            score += ComputePointScore(gd, i, j);
         }
     }
     return score;
@@ -197,7 +208,7 @@ int AImove::ComputePointScore(GomokuBoard &gd, int x, int y) const {
     
     //从x,y处开始搜索，看看周围的情况能构成的棋型，累加其得分
 
-    for(int i=0;i<8;i++)
+    for(int i=0;i<4;i++)
     {
         std::string patterns=findshape(gd,x,y,i);
         auto it = score_map.find(patterns);
@@ -205,6 +216,9 @@ int AImove::ComputePointScore(GomokuBoard &gd, int x, int y) const {
         point_score += it->second;
     }
     }
+
+    // 调试输出
+    std::cout << "Point (" << x << ", " << y << ") score: " << ((gd.board[x][y] == 1) ? point_score : -point_score) << std::endl;
 
     // 如果是黑棋，返回正数，如果是白棋，返回负数
     if (gd.board[x][y]==1) {
@@ -279,6 +293,8 @@ std::string AImove::findshape(GomokuBoard &gd, int x, int y, int arrow) const {
 
         // 匹配预定义的模式
         std::string matchedPattern = patterns.matchPattern(pattern, targetColor);
+
+        // std::cout << "Generated pattern: " << matchedPattern << " for position (" << x << ", " << y << ") in direction " << arrow << std::endl;
 
         return matchedPattern;
     }

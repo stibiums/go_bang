@@ -52,6 +52,12 @@ public:
     void restoreTemp(int x, int y);
     void confirmTemp(int x, int y, int color);
 
+
+    // 新增的临时落子和撤销落子函数
+    void makeMove(int x, int y, int color);
+    void unmakeMove(int x, int y);
+
+
     // 文件保存 / 读取
     bool saveToFile(const std::string& filename) const;
     bool loadFromFile(const std::string& filename);
