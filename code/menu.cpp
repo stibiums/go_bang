@@ -71,20 +71,18 @@ void changelevel(int &depth)
     int n;
     std::cout<<"请选择ai的棋力："<<endl;
     std::cout<<"初级请输入1："<<endl;
-    std::cout<<"中级请输入2："<<endl;
-    std::cout<<"高级请输入3："<<endl;
+    
+    std::cout<<"高级请输入2："<<endl;
     std::cin>>n;
     switch (n)
     {
     case 1:
-        depth=1;
-        break;
-    case 2:
         depth=3;
         break;
-    case 3:
+    case 2:
         depth=5;
         break;
+   
     default:
         break;
     }
