@@ -22,7 +22,7 @@ typedef std::pair<int, int> Point;
 class GomokuBoard {
 public:
     // 构造函数
-    GomokuBoard(int board_size);
+    GomokuBoard(int board_size,int depth);
 
      // 显式声明析构函数
     ~GomokuBoard();
@@ -71,6 +71,7 @@ public:
     std::vector<std::pair<int,int>> DIRECTIONS;
     std::vector<std::vector<int>> board;
     int size;
+    int depth;
     // 用于记录最后一步棋的信息
     int last_piece_color=2; // 最后一步棋的类型，这里的1为黑，2为白
     int current_color=1;

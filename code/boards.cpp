@@ -5,11 +5,12 @@
 #include <algorithm>
 #include <limits>
 
-using namespace std;
+
 
 // =============== 你已有的 GomokuBoard 构造与基础函数 ===============
-GomokuBoard::GomokuBoard(int board_size)
+GomokuBoard::GomokuBoard(int board_size,int intdepth)
     : size(board_size),
+      depth(intdepth),
       board(board_size, vector<int>(board_size, 0)),
       aimove(std::make_unique<AImove>(*this)) // 初始化aimove
       
@@ -106,7 +107,7 @@ void GomokuBoard::placePiece(bool currentPlayerType, int color, int x, int y){
     last_piece_color=color;
     last_piece_x=x;
     last_piece_y=y;
-    updateAllCache(x, y);
+    initializeCache();
 }
 
 bool GomokuBoard::undo(){
@@ -177,7 +178,7 @@ void GomokuBoard::restoreTemp(int x, int y){
 
 void GomokuBoard::confirmTemp(int x, int y, int color){
     clearRedoStack();
-    updateAllCache(x, y);
+    initializeCache();
     current_color=current_color==1?2:1;
     last_piece_color=color;
     last_piece_x=x;
@@ -186,12 +187,12 @@ void GomokuBoard::confirmTemp(int x, int y, int color){
 
 void GomokuBoard::makeMove(int x, int y, int color) {
     board[x][y] = color;
-    updateAllCache(x, y);
+    initializeCache();
 }
 
 void GomokuBoard::unmakeMove(int x, int y) {
     board[x][y] = 0;
-    updateAllCache(x, y);
+    initializeCache();
 }
 
 bool GomokuBoard::checkWin(int x, int y, int color) const{

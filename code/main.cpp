@@ -19,13 +19,15 @@ int main(void)
 
     while(true)
     {
+        int depth=3;
+
         // 显示简易菜单
-        displayMenu(PlayerType[1], PlayerType[2]);
+        displayMenu(PlayerType[1], PlayerType[2],depth);
 
         int Board_size = input_sizeofboard();
 
         // 生成对应大小的棋盘对象
-        GomokuBoard gb(Board_size);
+        GomokuBoard gb(Board_size,depth);
 
         // 使用1代表黑棋，使用2代表白棋，黑棋先行。
         int current_Player = 1;

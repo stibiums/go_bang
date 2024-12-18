@@ -8,7 +8,7 @@ using namespace std;
  * @param blackPlayerType 黑棋玩家类型，true为AI，false为人类
  * @param whitePlayerType 白棋玩家类型，true为AI，false为人类
  */
-void displayMenu(bool &blackPlayerType, bool &whitePlayerType)
+void displayMenu(bool &blackPlayerType, bool &whitePlayerType,int &depth)
 {
     cout << "==== 五子棋游戏菜单 ====" << endl;
     cout << "1. 设置玩家类型" << endl;
@@ -19,6 +19,7 @@ void displayMenu(bool &blackPlayerType, bool &whitePlayerType)
 
     while(true)
     {
+        bool hasai=false;
         cout << "请选择：" << endl;
         cin >> choice;
         switch(choice)
@@ -31,6 +32,7 @@ void displayMenu(bool &blackPlayerType, bool &whitePlayerType)
                     int blackChoice;
                     cin >> blackChoice;
                     blackPlayerType = (blackChoice == 1) ? false : true;
+                    if(blackChoice==2)hasai=true;
                 }
                 cout << "选择白棋（O）玩家类型:" << endl;
                 cout << "1. 人类玩家" << endl;
@@ -39,7 +41,10 @@ void displayMenu(bool &blackPlayerType, bool &whitePlayerType)
                     int whiteChoice;
                     cin >> whiteChoice;
                     whitePlayerType = (whiteChoice == 1) ? false : true;
+                    if(whiteChoice==2)hasai=true;
                 }
+
+                changelevel(depth);
                 break;
             case 2:
                 cout << "开始游戏..." << endl;
@@ -59,4 +64,28 @@ void pauseBeforeUpdate()
     cout << "按回车键继续..." << endl;
     cin.ignore(numeric_limits<streamsize>::max(), '\n');
     cin.get();
+}
+
+void changelevel(int &depth)
+{
+    int n;
+    std::cout<<"请选择ai的棋力："<<endl;
+    std::cout<<"初级请输入1："<<endl;
+    std::cout<<"中级请输入2："<<endl;
+    std::cout<<"高级请输入3："<<endl;
+    std::cin>>n;
+    switch (n)
+    {
+    case 1:
+        depth=1;
+        break;
+    case 2:
+        depth=3;
+        break;
+    case 3:
+        depth=5;
+        break;
+    default:
+        break;
+    }
 }

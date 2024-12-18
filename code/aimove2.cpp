@@ -42,7 +42,7 @@ pair<int,int> AImove::PlayChess(GomokuBoard &gd) {
 std::pair<int, int> AImove::ai_move(GomokuBoard& gd) {
     cut_count = 0;
     search_count = 0;
-    negamax(gd,true, DEPTH, -99999999, 99999999);
+    negamax(gd,true, gd.depth, -99999999, 99999999);
     std::cout << "本次共剪枝次数：" << cut_count << std::endl;
     std::cout << "本次共搜索次数：" << search_count << std::endl;
     return next_point;
