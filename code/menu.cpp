@@ -43,8 +43,7 @@ void displayMenu(bool &blackPlayerType, bool &whitePlayerType,int &depth)
                     whitePlayerType = (whiteChoice == 1) ? false : true;
                     if(whiteChoice==2)hasai=true;
                 }
-
-                changelevel(depth);
+                if(hasai)changelevel(depth);
                 break;
             case 2:
                 cout << "开始游戏..." << endl;
