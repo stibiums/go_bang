@@ -8,7 +8,7 @@
             "args": [
                 "main.cpp",
                 "boards.cpp",
-                "aimove.cpp",
+                "aimove2.cpp",
                 //"fio.cpp",
                 //"zobrist.cpp",
                 //"board.cpp",

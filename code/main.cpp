@@ -43,7 +43,8 @@ int main(void)
             pair<int,int> xy = gb.inputfunction(currentPlaytType, current_Player);
             x = xy.first; 
             y = xy.second;
-            pauseBeforeUpdate() ;
+            system ("pause");
+            //pauseBeforeUpdate() ;
             if(x == -1 && y == -1) {
                 // 悔棋
                 if(gb.undo()){
@@ -104,8 +105,9 @@ int main(void)
                 // 检查禁手
                 if(current_Player == 1 && gb.isForbiddenMove(x, y, current_Player)){
                     // 禁手，恢复到之前的状态
-                    gb.restoreTemp(x, y);
+                    gb.printBoard();
                     cout << "黑方下出禁手，白方获胜" << endl;
+                    gb.restoreTemp(x, y);
                     break;
                 }
 

@@ -1,5 +1,5 @@
 #include "boards.hpp"
-#include "aimove.hpp"
+#include "aimove2.hpp"
 #include "law.hpp"
 #include <iostream>
 #include <algorithm>
@@ -11,11 +11,7 @@ using namespace std;
 GomokuBoard::GomokuBoard(int board_size)
     : size(board_size),
       board(board_size, vector<int>(board_size, 0)),
-      horizontal_lines(board_size, string(board_size, '.')),
-      vertical_lines(board_size, string(board_size, '.')),
-      main_diagonals(2*board_size -1, string(board_size, '.')),
-      anti_diagonals(2*board_size -1, string(board_size, '.')),
-      aimove(std::make_unique<AImove>()) // 初始化aimove
+      aimove(std::make_unique<AImove>(*this)) // 初始化aimove
       
 {
     // AI / 五连检测方向
@@ -24,32 +20,32 @@ GomokuBoard::GomokuBoard(int board_size)
 }
 
 void GomokuBoard::initializeCache(){
-    horizontal_lines.assign(size, string(size, '.'));
-    vertical_lines.assign(size, string(size, '.'));
-    main_diagonals.assign(2*size -1, string(size, '.'));
-    anti_diagonals.assign(2*size -1, string(size, '.'));
-
+    list1.clear();
+    list2.clear();
+    list3.clear();
+    list_all.clear();
     for(int x=0; x<size; x++){
         for(int y=0; y<size; y++){
-            if(board[x][y] !=0){
-                char c = (board[x][y] ==1)? 'X':'O';
-                horizontal_lines[x][y] = c;
-                vertical_lines[y][x] = c;
-                main_diagonals[x - y + size -1][ min(x,y)] = c;
-                anti_diagonals[x + y][ min(x, size -1 -y)] = c;
+            list_all.emplace_back(x, y);
+            if(board[x][y]==1)
+            {
+                list1.emplace_back(x,y);
+                list3.emplace_back(x,y);
+            }
+            else if(board[x][y]==2)
+            {
+                list2.emplace_back(x,y);
+                list3.emplace_back(x,y);
             }
         }
     }
 }
 
 void GomokuBoard::updateAllCache(int x, int y){
-    if(board[x][y] !=0){
-        char c = (board[x][y] ==1)? 'X':'O';
-        horizontal_lines[x][y] = c;
-        vertical_lines[y][x] = c;
-        main_diagonals[x - y + size -1][min(x,y)] = c;
-        anti_diagonals[x + y][min(x,size -1 -y)] = c;
-    }
+    list3.emplace_back(x,y);
+    if(last_piece_color==1)list1.emplace_back(x,y);
+    if(last_piece_color==2)list2.emplace_back(x,y);
+    
 }
 
 void GomokuBoard::printBoard() const{
@@ -308,10 +304,6 @@ bool GomokuBoard::loadFromFile(const std::string& filename){
         }
     }
     ifs.close();
-    horizontal_lines.assign(size, string(size,'.'));
-    vertical_lines.assign(size, string(size,'.'));
-    main_diagonals.assign(2*size -1, string(size,'.'));
-    anti_diagonals.assign(2*size -1, string(size,'.'));
     initializeCache();
     return true;
 }

@@ -10,9 +10,11 @@
 #include <fstream>
 #include<memory>
 
-// 前向声明，避免循环依赖。若你的项目需要使用 AIMove 具体定义，
+// 前向声明，避免循环依赖。
 // 可在本文件或外部 #include "aimove.hpp"
 class AImove;
+
+typedef std::pair<int, int> Point;
 
 /**
  * @brief 五子棋棋盘类，用于管理棋盘状态、落子、判断胜负及完整的黑棋禁手检测。
@@ -34,6 +36,7 @@ public:
     bool checkWin(int x, int y, int color) const;    // 是否连成 == 5
     bool checkWins()const;
     bool isForbiddenMove(int x, int y, int color) const; // 检测黑棋禁手 (长连 / 双四 / 双三)
+    bool isForbiddenMoveforAI() const;
     bool isDraw() const; // 检测平局
 
     // 棋盘打印、交互
@@ -74,12 +77,17 @@ public:
     int last_piece_x=-1;
     int last_piece_y=-1;
 
+    //存储当前的棋盘信息
+
+    std::vector<Point> list1;  // 黑棋
+    std::vector<Point> list2;  // 白棋
+    std::vector<Point> list3;  // 所有棋子
+
+    std::vector<Point> list_all;  // 整个棋盘的点
+
 private:
-    // -------- 棋盘缓存，用于显示、撤销/重做 --------
-    std::vector<std::string> horizontal_lines;
-    std::vector<std::string> vertical_lines;
-    std::vector<std::string> main_diagonals;
-    std::vector<std::string> anti_diagonals;
+    
+    
 
     // 撤销与重做栈
     std::stack<std::vector<std::vector<int>>> undoStack;
