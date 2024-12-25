@@ -1,9 +1,0 @@
-# ninja log v6
-3	2945	7568432910188880	untitled_autogen/timestamp	954d4fd1c229b17e
-3	2945	7568432910188880	untitled_autogen/mocs_compilation.cpp	954d4fd1c229b17e
-3	2945	7568432910188880	D:/24 autumn/computerscience/work/workgui/untitled/build/Desktop_Qt_6_8_1_MinGW_64_bit-Debug/untitled_autogen/timestamp	954d4fd1c229b17e
-3	2945	7568432910188880	D:/24 autumn/computerscience/work/workgui/untitled/build/Desktop_Qt_6_8_1_MinGW_64_bit-Debug/untitled_autogen/mocs_compilation.cpp	954d4fd1c229b17e
-2995	5750	7568432912525918	CMakeFiles/untitled.dir/untitled_autogen/mocs_compilation.cpp.obj	db10177ae53ffdb1
-3058	5793	7568432913151060	CMakeFiles/untitled.dir/main.cpp.obj	221cf7029b21e787
-3123	5853	7568432913817592	CMakeFiles/untitled.dir/widget.cpp.obj	a180dad3cd265fd4
-5898	6256	7568432941573035	untitled.exe	3a7490f943b280ca
