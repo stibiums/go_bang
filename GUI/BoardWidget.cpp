@@ -11,6 +11,10 @@ BoardWidget::BoardWidget(GomokuBoard* gameBoard, QWidget *parent)
 {
     setMinimumSize(gridSize * (gameBoard->getSize() - 1) + 2 * margin,
                    gridSize * (gameBoard->getSize() - 1) + 2 * margin);
+
+    // 启用鼠标跟踪
+    setMouseTracking(true);
+
     // 检查如果当前玩家是AI，立即触发AI下第一手棋
     if (gameBoard->getPlayerType(gameBoard->current_color) == AI) {
         // 使用单次定时器异步调用AI落子，确保GUI先完成初始化
@@ -27,6 +31,8 @@ void BoardWidget::paintEvent(QPaintEvent *)
 
     drawBoard(painter);
     drawStones(painter);
+    drawHighlight(painter);
+    
 }
 
 void BoardWidget::mousePressEvent(QMouseEvent *event)
@@ -153,3 +159,60 @@ QPoint BoardWidget::getGridPosition(const QPoint &pos) const
     int y = (pos.x() - margin + gridSize/2) / gridSize;
     return QPoint(x, y);
 }
+
+
+void BoardWidget::mouseMoveEvent(QMouseEvent *event)
+{
+    QPoint gridPos = getGridPosition(event->pos());
+    if(gridPos.x() >=0 && gridPos.x() < gameBoard->getSize() &&
+        gridPos.y() >=0 && gridPos.y() < gameBoard->getSize()){
+        // 检查该位置是否为空
+        char cell = gameBoard->getBoardState()[gridPos.x()][gridPos.y()];
+        if(cell != 'X' && cell != 'O'){
+            if(hoveredGridPos != gridPos){
+                hoveredGridPos = gridPos;
+                update(); // 重新绘制以显示高亮
+            }
+            return;
+        }
+    }
+    // 如果不在有效范围或位置已被占用，清除高亮
+    if(hoveredGridPos != QPoint(-1, -1)){
+        hoveredGridPos = QPoint(-1, -1);
+        update(); // 重新绘制以移除高亮
+    }
+}
+
+
+
+void BoardWidget::leaveEvent(QEvent *event)
+{
+    if(hoveredGridPos != QPoint(-1, -1)){
+        hoveredGridPos = QPoint(-1, -1);
+        update(); // 重新绘制以移除高亮
+    }
+}
+
+void BoardWidget::drawHighlight(QPainter &painter)
+{
+    if(hoveredGridPos.x() == -1 && hoveredGridPos.y() == -1){
+        return; // 没有有效的悬停位置
+    }
+
+    // 检查该位置是否为空
+    char cell = gameBoard->getBoardState()[hoveredGridPos.x()][hoveredGridPos.y()];
+    if(cell == 'X' || cell == 'O'){
+        return; // 位置已被占用，不绘制高亮
+    }
+
+    QPoint center(margin + hoveredGridPos.y() * gridSize, margin + hoveredGridPos.x() * gridSize);
+
+    // 设置高亮颜色（半透明）
+    QColor highlightColor(255, 0, 0, 100); // 蓝色，半透明
+    painter.setBrush(highlightColor);
+    painter.setPen(Qt::NoPen);
+
+    // 绘制一个稍小的圆形作为高亮
+    painter.drawEllipse(center, gridSize/2 - 10, gridSize/2 - 10);
+}
+

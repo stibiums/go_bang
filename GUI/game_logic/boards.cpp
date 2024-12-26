@@ -3,22 +3,24 @@
 #include "aimove2.hpp"
 #include "law.hpp"
 #include <fstream>
+#include <cmath> // 为了使用 M_PI
 
 // 构造函数
 GomokuBoard::GomokuBoard(int board_size, int intdepth)
     : size(board_size),
-    depth(intdepth),
-    board(board_size, std::vector<int>(board_size, 0)),
-    aimove(std::make_unique<AImove>(*this)) // 初始化aimove
+      depth(intdepth),
+      board(board_size, std::vector<int>(board_size, 0)),
+      aimove(std::make_unique<AImove>(*this)) // 初始化aimove
 {
     // AI / 五连检测方向
-    DIRECTIONS = { {1,0},{0,1},{1,1},{1,-1} };
+    DIRECTIONS = { {1,0}, {0,1}, {1,1}, {1,-1} };
     initializeCache();
 }
 
 // 析构函数
 GomokuBoard::~GomokuBoard() = default;
 
+// 设置玩家类型（单一类型，不区分颜色）
 void GomokuBoard::setPlayerType(PlayerType type)
 {
     playerType = type;
@@ -27,8 +29,8 @@ void GomokuBoard::setPlayerType(PlayerType type)
 // 获取棋盘状态，用于UI渲染
 std::vector<std::vector<char>> GomokuBoard::getBoardState() const {
     std::vector<std::vector<char>> displayBoard(size, std::vector<char>(size, '.'));
-    for(int x=0; x<size; x++){
-        for(int y=0; y<size; y++){
+    for(int x = 0; x < size; x++){
+        for(int y = 0; y < size; y++){
             if(board[x][y] == 1) displayBoard[x][y] = 'X';
             else if(board[x][y] == 2) displayBoard[x][y] = 'O';
         }
@@ -58,7 +60,6 @@ PlayerType GomokuBoard::getPlayerType(int playerColor) const
     return Human;
 }
 
-
 // 落子
 bool GomokuBoard::placePiece(int x, int y, int currentPlayer){
     if(isValidMove(x, y)){
@@ -68,6 +69,7 @@ bool GomokuBoard::placePiece(int x, int y, int currentPlayer){
         last_piece_color = currentPlayer;
         last_piece_x = x;
         last_piece_y = y;
+       
         initializeCache();
         return true;
     }
@@ -85,6 +87,8 @@ bool GomokuBoard::undo(){
     undoStack.pop();
     initializeCache();
     redoStack.push(board);
+    
+    
     return true;
 }
 
@@ -97,6 +101,8 @@ bool GomokuBoard::redo(){
     redoStack.pop();
     initializeCache();
     undoStack.push(board);
+    
+    
     return true;
 }
 
@@ -112,13 +118,17 @@ bool GomokuBoard::saveToFile(const std::string& filename) const {
     ofs.write(reinterpret_cast<const char*>(&last_piece_color), sizeof(last_piece_color));
     ofs.write(reinterpret_cast<const char*>(&last_piece_x), sizeof(last_piece_x));
     ofs.write(reinterpret_cast<const char*>(&last_piece_y), sizeof(last_piece_y));
+    
     // 保存棋盘
-    for(int x=0; x<size; x++){
-        for(int y=0; y<size; y++){
+    for(int x = 0; x < size; x++){
+        for(int y = 0; y < size; y++){
             int val = board[x][y];
             ofs.write(reinterpret_cast<const char*>(&val), sizeof(val));
         }
     }
+    
+   
+    
     // 可进一步保存撤销栈和重做栈
     ofs.close();
     return true;
@@ -142,13 +152,16 @@ bool GomokuBoard::loadFromFile(const std::string& filename){
     ifs.read(reinterpret_cast<char*>(&last_piece_x), sizeof(last_piece_x));
     ifs.read(reinterpret_cast<char*>(&last_piece_y), sizeof(last_piece_y));
     board.assign(size, std::vector<int>(size, 0));
-    for(int x=0; x<size; x++){
-        for(int y=0; y<size; y++){
+    for(int x = 0; x < size; x++){
+        for(int y = 0; y < size; y++){
             int val = 0;
             ifs.read(reinterpret_cast<char*>(&val), sizeof(val));
             board[x][y] = val;
         }
     }
+    
+    
+    
     // 可进一步加载撤销栈和重做栈
     ifs.close();
     initializeCache();
@@ -178,8 +191,8 @@ bool GomokuBoard::checkWin(int x, int y, int color) const{
 
 // 检查是否平局
 bool GomokuBoard::isDraw() const{
-    for(int i=0; i<size; i++){
-        for(int j=0; j<size; j++){
+    for(int i = 0; i < size; i++){
+        for(int j = 0; j < size; j++){
             if(board[i][j] == 0) return false;
         }
     }
@@ -198,28 +211,25 @@ void GomokuBoard::initializeCache(){
     list2.clear();
     list3.clear();
     list_all.clear();
-    for(int x=0; x<size; x++){
-        for(int y=0; y<size; y++){
+    for(int x = 0; x < size; x++){
+        for(int y = 0; y < size; y++){
             list_all.emplace_back(x, y);
-            if(board[x][y]==1)
-            {
-                list1.emplace_back(x,y);
-                list3.emplace_back(x,y);
+            if(board[x][y] == 1){
+                list1.emplace_back(x, y);
+                list3.emplace_back(x, y);
             }
-            else if(board[x][y]==2)
-            {
-                list2.emplace_back(x,y);
-                list3.emplace_back(x,y);
+            else if(board[x][y] == 2){
+                list2.emplace_back(x, y);
+                list3.emplace_back(x, y);
             }
         }
     }
 }
 
 void GomokuBoard::updateAllCache(int x, int y){
-    list3.emplace_back(x,y);
-    if(last_piece_color==1)list1.emplace_back(x,y);
-    if(last_piece_color==2)list2.emplace_back(x,y);
-
+    list3.emplace_back(x, y);
+    if(last_piece_color == 1) list1.emplace_back(x, y);
+    if(last_piece_color == 2) list2.emplace_back(x, y);
 }
 
 void GomokuBoard::tempPlace(int x, int y, int color){
@@ -238,7 +248,7 @@ void GomokuBoard::restoreTemp(int x, int y){
 void GomokuBoard::confirmTemp(int x, int y, int color){
     clearRedoStack();
     initializeCache();
-    current_color = (current_color ==1) ? 2 :1;
+    current_color = (current_color == 1) ? 2 : 1;
     last_piece_color = color;
     last_piece_x = x;
     last_piece_y = y;

@@ -88,6 +88,8 @@ void MainWindow::newGame()
         boardWidget = new BoardWidget(gameBoard, this);
         setCentralWidget(boardWidget);
 
+      
+
         // 如果黑棋是AI，自动开始
         if (gameBoard->getPlayerType(gameBoard->current_color) == AI) {
             QTimer::singleShot(100, boardWidget, &BoardWidget::handleAIMove);
@@ -103,7 +105,7 @@ void MainWindow::newGame()
 void MainWindow::undoMove()
 {
     if(gameBoard->undo()){
-        boardWidget->update();
+       
         qDebug() << "执行悔棋操作";
     }
     else{
@@ -131,7 +133,7 @@ void MainWindow::loadGame()
     QString filename = QFileDialog::getOpenFileName(this, tr("加载游戏"), "", tr("Gomoku Files (*.gob)"));
     if(filename.isEmpty()) return;
     if(gameBoard->loadFromFile(filename.toStdString())){
-        boardWidget->update();
+        
         QMessageBox::information(this, tr("加载游戏"), tr("游戏已成功加载！"));
         qDebug() << "游戏已从：" << filename << "加载";
     }

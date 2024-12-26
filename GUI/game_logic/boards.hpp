@@ -9,8 +9,6 @@
 #include <memory>
 #include "../playertype.h"
 
-
-
 class AImove; // 前向声明
 
 typedef std::pair<int, int> Point;
@@ -31,7 +29,6 @@ public:
     // 析构函数
     ~GomokuBoard();
 
-
     std::pair<int,int> aiInput();
 
     // 设置玩家类型
@@ -40,12 +37,11 @@ public:
     // 获取玩家类型
     PlayerType getPlayerType(int playerColor) const;
 
-
     // 下棋相关操作
     bool placePiece(int x, int y, int currentPlayer);
     bool isValidMove(int x, int y) const;
-    bool checkWin(int x, int y, int color) const;    // 是否连成 == 5
-    bool checkWins()const;
+    bool checkWin(int x, int y, int color) const;    // 是否连成 >= 5
+    bool checkWins() const;
     bool isForbiddenMove(int x, int y, int color) const; // 检测黑棋禁手 (长连 / 双四 / 双三)
     bool isForbiddenMoveforAI() const;
     bool isDraw() const; // 检测平局
@@ -66,11 +62,9 @@ public:
     void restoreTemp(int x, int y);
     void confirmTemp(int x, int y, int color);
 
-
     // 新增的临时落子和撤销落子函数
     void makeMove(int x, int y, int color);
     void unmakeMove(int x, int y);
-
 
     // 文件保存 / 读取
     bool saveToFile(const std::string& filename) const;
@@ -87,12 +81,12 @@ public:
     int size;
     int depth;
     // 用于记录最后一步棋的信息
-    int last_piece_color=2; // 最后一步棋的类型，这里的1为黑，2为白
-    int current_color=1;
-    int last_piece_x=-1;
-    int last_piece_y=-1;
+    int last_piece_color = 2; // 最后一步棋的类型，这里的1为黑，2为白
+    int current_color = 1;
+    int last_piece_x = -1;
+    int last_piece_y = -1;
     PlayerType playerType; // 添加 playerType 成员
-    //存储当前的棋盘信息
+    // 存储当前的棋盘信息
 
     std::vector<Point> list1;  // 黑棋
     std::vector<Point> list2;  // 白棋
@@ -106,6 +100,7 @@ public:
     // AI算法类
     std::unique_ptr<AImove> aimove;
 
+   
 private:
 
     PlayerType blackPlayerType; // 黑棋玩家类型
@@ -115,8 +110,7 @@ private:
     std::stack<std::vector<std::vector<int>>> undoStack;
     std::stack<std::vector<std::vector<int>>> redoStack;
 
-    
-
+   
     // 初始化和更新缓存
     void initializeCache();
     void updateAllCache(int x, int y);
@@ -127,7 +121,6 @@ private:
     // 禁手检测部分的函数
 
 };
-
 int input_sizeofboard();
 
 #endif // BOARDS_HPP
