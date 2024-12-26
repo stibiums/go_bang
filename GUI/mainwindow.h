@@ -3,28 +3,34 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include "game_logic/boards.hpp"
+#include "BoardWidget.h"
 
-class BoardWidget;
+QT_BEGIN_NAMESPACE
+namespace Ui { class MainWindow; }
+QT_END_NAMESPACE
 
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
 
 public:
-    explicit MainWindow(QWidget *parent = nullptr);
+    MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
 private slots:
     void newGame();
+    void undoMove();
+    void saveGame();
+    void loadGame();
     void exitGame();
 
 private:
-    void createMenus();
+    Ui::MainWindow *ui;
+    GomokuBoard* gameBoard;
+    BoardWidget* boardWidget;
 
-    BoardWidget *board;
-    QMenu *gameMenu;
-    QAction *newGameAction;
-    QAction *exitAction;
+    void setupMenu();
 };
 
 #endif // MAINWINDOW_H

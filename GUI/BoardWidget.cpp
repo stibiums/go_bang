@@ -1,33 +1,20 @@
+// BoardWidget.cpp
 #include "BoardWidget.h"
-#include "GameLogic.h"
-
 #include <QPainter>
 #include <QMouseEvent>
+#include <QDebug>
 #include <QMessageBox>
-#include <cmath> // 引入 round 函数
+#include <QTimer>
+#include <QCoreApplication>
 
-BoardWidget::BoardWidget(QWidget *parent)
-    : QWidget(parent), gridSize(40), boardSize(15), currentPlayer(Black), margin(40)
+BoardWidget::BoardWidget(GomokuBoard* gameBoard, QWidget *parent)
+    : QWidget(parent), gameBoard(gameBoard), gridSize(40), margin(40)
 {
-    // 设置最小尺寸，确保棋盘有足够的空间
-    setMinimumSize(gridSize * (boardSize - 1) + 2 * margin, gridSize * (boardSize - 1) + 2 * margin);
-
-    // 启用鼠标跟踪
-    setMouseTracking(true);
-
-    // 初始化游戏逻辑
-    GameLogic::initialize(boardSize);
+    setMinimumSize(gridSize * (gameBoard->getSize() - 1) + 2 * margin,
+                   gridSize * (gameBoard->getSize() - 1) + 2 * margin);
 }
 
-void BoardWidget::resetBoard()
-{
-    stones.clear();
-    currentPlayer = Black;
-    GameLogic::initialize(boardSize); // 重置游戏逻辑
-    update();
-}
-
-void BoardWidget::paintEvent(QPaintEvent * /* event */)
+void BoardWidget::paintEvent(QPaintEvent *)
 {
     QPainter painter(this);
     painter.setRenderHint(QPainter::Antialiasing);
@@ -36,52 +23,44 @@ void BoardWidget::paintEvent(QPaintEvent * /* event */)
     drawStones(painter);
 }
 
-void BoardWidget::resizeEvent(QResizeEvent * /* event */)
-{
-    // 重新计算 gridSize 以适应窗口大小，同时保持边缘的 margin
-    int w = width() - 2 * margin;
-    int h = height() - 2 * margin;
-    gridSize = qMin(w, h) / (boardSize - 1); // 减1因为网格线数比格子数少1
-    update();
-}
-
-void BoardWidget::mouseMoveEvent(QMouseEvent *event)
-{
-    QPoint gridPos = getGridPosition(event->pos());
-
-    // 检查是否在棋盘范围内
-    if (gridPos.x() >= 0 && gridPos.x() < boardSize &&
-        gridPos.y() >= 0 && gridPos.y() < boardSize) {
-        hoverGridPos = gridPos;
-        update(); // 更新界面以显示高亮
-    } else {
-        hoverGridPos = QPoint(-1, -1); // 无效位置，隐藏高亮
-        update();
-    }
-}
 
 void BoardWidget::mousePressEvent(QMouseEvent *event)
 {
-    if (event->button() == Qt::LeftButton) { // 仅响应左键点击
-        QPoint gridPos = getGridPosition(event->pos()); // 转换为棋盘坐标
+    if(event->button() == Qt::LeftButton){
+        QPoint gridPos = getGridPosition(event->pos());
+        if(gridPos.x() >=0 && gridPos.x() < gameBoard->getSize() &&
+            gridPos.y() >=0 && gridPos.y() < gameBoard->getSize()){
 
-        // 检查点击位置是否在棋盘范围内
-        if (gridPos.x() < 0 || gridPos.x() >= boardSize ||
-            gridPos.y() < 0 || gridPos.y() >= boardSize)
-            return;
+            // 处理落子
+            bool success = gameBoard->placePiece(gridPos.x(), gridPos.y(), gameBoard->current_color);
+            if(success){
+                update(); // 请求重绘
+                QCoreApplication::processEvents(); // 立即处理事件，包括重绘
 
-        // 尝试放置棋子
-        if (placeStone(gridPos.x(), gridPos.y())) {
-            // 检查是否胜利
-            if (GameLogic::checkWin(gridPos.x(), gridPos.y(), currentPlayer)) {
-                QMessageBox::information(this, "游戏结束", QString("%1 胜利!").arg(currentPlayer == Black ? "黑棋" : "白棋"));
-                resetBoard(); // 重置棋盘以开始新游戏
-                return;
+                // 检查胜负
+                if(gameBoard->checkWin(gridPos.x(), gridPos.y(), gameBoard->current_color)){
+                    QString winner = (gameBoard->current_color ==1) ? "黑棋" : "白棋";
+                    QMessageBox::information(this, "游戏结束", QString("%1 获胜！").arg(winner));
+                    return;
+                }
+                else if(gameBoard->isDraw()){
+                    QMessageBox::information(this, "游戏结束", "平局！");
+                    return;
+                }
+                else{
+                    // 切换玩家
+                    gameBoard->current_color = (gameBoard->current_color ==1) ? 2 :1;
+
+                    // 如果下一步是AI，触发AI落子
+                    if(gameBoard->current_color ==2 && gameBoard->aimove){ // 假设白棋为AI
+                        // 使用短暂的延迟以确保重绘
+                        QTimer::singleShot(100, this, &BoardWidget::handleAIMove);
+                    }
+                }
             }
-
-            // 切换玩家
-            currentPlayer = (currentPlayer == Black) ? White : Black;
-            update(); // 更新界面以显示新的棋子
+            else{
+                QMessageBox::warning(this, "无效操作", "无法在该位置落子！");
+            }
         }
     }
 }
@@ -90,80 +69,73 @@ void BoardWidget::drawBoard(QPainter &painter)
 {
     painter.setPen(Qt::black);
 
-    // 绘制横线
-    for (int i = 0; i < boardSize; ++i) {
+    for(int i=0; i<gameBoard->getSize(); i++){
+        // 横线
         painter.drawLine(margin, margin + i * gridSize,
-                         margin + (boardSize - 1) * gridSize, margin + i * gridSize);
-    }
-
-    // 绘制纵线
-    for (int i = 0; i < boardSize; ++i) {
+                         margin + (gameBoard->getSize() -1)*gridSize, margin + i * gridSize);
+        // 纵线
         painter.drawLine(margin + i * gridSize, margin,
-                         margin + i * gridSize, margin + (boardSize - 1) * gridSize);
+                         margin + i * gridSize, margin + (gameBoard->getSize() -1)*gridSize);
     }
 }
-
-// BoardWidget.cpp
 
 void BoardWidget::drawStones(QPainter &painter)
 {
-    // 绘制所有棋子
-    for (const Stone &stone : stones) {
-        if (stone.player == Black)
-            painter.setBrush(Qt::black);
-        else
-            painter.setBrush(Qt::white);
+    auto boardState = gameBoard->getBoardState();
 
-        // 计算棋子的中心坐标
-        QPoint center(margin + stone.x * gridSize, margin + stone.y * gridSize);
-
-        // 确保棋子不会超出网格
-        int radius = gridSize / 2 - 4;
-        painter.drawEllipse(center, radius, radius);
-    }
-
-    // 绘制悬停高亮（可选）
-    if (hoverGridPos.x() >= 0 && hoverGridPos.x() < boardSize &&
-        hoverGridPos.y() >= 0 && hoverGridPos.y() < boardSize) {
-        QPoint center(margin + hoverGridPos.x() * gridSize, margin + hoverGridPos.y() * gridSize);
-        painter.setPen(QPen(Qt::red, 2));
-        painter.setBrush(Qt::NoBrush);
-        painter.drawEllipse(center, gridSize / 2 - 2, gridSize / 2 - 2);
+    for(int x=0; x<gameBoard->getSize(); x++){
+        for(int y=0; y<gameBoard->getSize(); y++){
+            if(boardState[x][y] == 'X' || boardState[x][y] == 'O'){
+                QPoint center(margin + y * gridSize, margin + x * gridSize);
+                QColor color = (boardState[x][y] == 'X') ? Qt::black : Qt::white;
+                painter.setBrush(color);
+                painter.setPen(Qt::black);
+                painter.drawEllipse(center, gridSize/2 - 5, gridSize/2 -5);
+            }
+        }
     }
 }
 
-QPoint BoardWidget::getGridPosition(const QPoint &pos)
+void BoardWidget::handleAIMove()
 {
-    // 将鼠标点击的像素坐标转换为棋盘的网格坐标
-    double x_double = static_cast<double>(pos.x() - margin) / gridSize;
-    double y_double = static_cast<double>(pos.y() - margin) / gridSize;
-    int x = static_cast<int>(round(x_double));
-    int y = static_cast<int>(round(y_double));
+    auto aiMove = gameBoard->aiInput();
+    if(aiMove.first != -1 && aiMove.second != -1){
+        bool aiSuccess = gameBoard->placePiece(aiMove.first, aiMove.second, gameBoard->current_color);
+        if(aiSuccess){
+            update(); // 重新绘制棋盘
+
+            // 检查胜负
+            if(gameBoard->checkWin(aiMove.first, aiMove.second, gameBoard->current_color)){
+                QString winner = (gameBoard->current_color ==1) ? "黑棋" : "白棋";
+                QMessageBox::information(this, "游戏结束", QString("%1 获胜！").arg(winner));
+                return;
+            }
+            else if(gameBoard->isDraw()){
+                QMessageBox::information(this, "游戏结束", "平局！");
+                return;
+            }
+            else{
+                // 切换玩家
+                gameBoard->current_color = (gameBoard->current_color ==1) ? 2 :1;
+            }
+        }
+        else{
+            QMessageBox::warning(this, "AI 落子失败", "AI 无法在该位置落子！");
+        }
+    }
+    else{
+        QMessageBox::warning(this, "AI 落子失败", "AI 无法进行落子！");
+    }
+}
+
+QPoint BoardWidget::getGridPosition(const QPoint &pos) const
+{
+    int x = (pos.y() - margin + gridSize/2) / gridSize;
+    int y = (pos.x() - margin + gridSize/2) / gridSize;
     return QPoint(x, y);
 }
 
-bool BoardWidget::placeStone(int gridX, int gridY)
+void BoardWidget::updateBoard()
 {
-    // 检查该位置是否已经有棋子
-    for (const Stone &stone : stones) {
-        if (stone.x == gridX && stone.y == gridY)
-            return false; // 位置已被占用
-    }
-
-    // 放置棋子
-    Stone newStone;
-    newStone.x = gridX;
-    newStone.y = gridY;
-    newStone.player = currentPlayer;
-    stones.append(newStone);
-
-    // 更新游戏逻辑
-    GameLogic::placeStone(gridX, gridY, currentPlayer);
-
-    return true;
-}
-
-void BoardWidget::checkGameOver(int gridX, int gridY)
-{
-    // 已在 placeStone 中处理
+    update();
 }
