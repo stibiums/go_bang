@@ -36,6 +36,29 @@ std::vector<std::vector<char>> GomokuBoard::getBoardState() const {
     return displayBoard;
 }
 
+void GomokuBoard::setPlayerType(int playerColor, PlayerType type)
+{
+    if(playerColor == 1){
+        blackPlayerType = type;
+    }
+    else if(playerColor == 2){
+        whitePlayerType = type;
+    }
+}
+
+PlayerType GomokuBoard::getPlayerType(int playerColor) const
+{
+    if(playerColor == 1){
+        return blackPlayerType;
+    }
+    else if(playerColor == 2){
+        return whitePlayerType;
+    }
+    // 默认返回Human
+    return Human;
+}
+
+
 // 落子
 bool GomokuBoard::placePiece(int x, int y, int currentPlayer){
     if(isValidMove(x, y)){

@@ -54,6 +54,7 @@ void MainWindow::setupMenu()
     menuBar()->addAction(loadAction);
 
 
+
     // 退出游戏
     QAction* exitAction = new QAction(tr("&退出游戏"), this);
     connect(exitAction, &QAction::triggered, this, &MainWindow::exitGame);
@@ -61,23 +62,43 @@ void MainWindow::setupMenu()
 
 }
 
+
 void MainWindow::newGame()
 {
-    // 弹出对话框让用户选择棋盘大小和AI深度
-    bool ok;
-    int size = QInputDialog::getInt(this, tr("新游戏"), tr("请输入棋盘大小:"), 15, 5, 30, 1, &ok);
-    if(!ok) return;
+    // 弹出综合设置对话框让用户选择棋盘大小、AI深度和玩家类型
+    NewGameDialog settingsDialog(this);
+    if(settingsDialog.exec() == QDialog::Accepted){
+        int size = settingsDialog.getBoardSize();
+        int depth = settingsDialog.getAIDepth();
+        PlayerType blackType = settingsDialog.getBlackPlayerType();
+        PlayerType whiteType = settingsDialog.getWhitePlayerType();
 
-    int depth = QInputDialog::getInt(this, tr("AI深度"), tr("请选择AI的深度（棋力）:"), 3, 1, 10, 1, &ok);
-    if(!ok) return;
+        // 更新玩家类型
+        gameBoard->setPlayerType(1, blackType); // 1: 黑棋
+        gameBoard->setPlayerType(2, whiteType); // 2: 白棋
 
-    delete gameBoard;
-    gameBoard = new GomokuBoard(size, depth);
-    delete boardWidget;
-    boardWidget = new BoardWidget(gameBoard, this);
-    setCentralWidget(boardWidget);
-    qDebug() << "开始新游戏，棋盘大小：" << size << "，AI深度：" << depth;
+        // 创建新的游戏板
+        delete gameBoard;
+        gameBoard = new GomokuBoard(size, depth);
+        gameBoard->setPlayerType(1, blackType);
+        gameBoard->setPlayerType(2, whiteType);
+
+        // 创建新的棋盘窗口
+        delete boardWidget;
+        boardWidget = new BoardWidget(gameBoard, this);
+        setCentralWidget(boardWidget);
+
+        // 如果黑棋是AI，自动开始
+        if (gameBoard->getPlayerType(gameBoard->current_color) == AI) {
+            QTimer::singleShot(100, boardWidget, &BoardWidget::handleAIMove);
+        }
+
+        qDebug() << "开始新游戏，棋盘大小：" << size << "，AI深度：" << depth;
+        qDebug() << "黑棋类型：" << (blackType == Human ? "人类" : "AI");
+        qDebug() << "白棋类型：" << (whiteType == Human ? "人类" : "AI");
+    }
 }
+
 
 void MainWindow::undoMove()
 {

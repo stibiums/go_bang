@@ -28,7 +28,7 @@ private:
     void drawStones(QPainter &painter);
     void updateBoard();
 
-private slots:
+public slots:
     void handleAIMove(); // 确保声明了这个槽函数
 };
 

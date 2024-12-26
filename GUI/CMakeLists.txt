@@ -28,6 +28,11 @@ set(BOARD_WIDGET_SOURCES
     BoardWidget.h
 )
 
+set(NEWGAME_SOURCES
+    newgamedialog.cpp
+    newgamedialog.h
+)
+
 # 定义游戏逻辑源文件
 set(GAME_LOGIC_SOURCES
     game_logic/boards.cpp
@@ -42,6 +47,7 @@ set(PROJECT_SOURCES
     ${UI_SOURCES}
     ${BOARD_WIDGET_SOURCES}
     ${GAME_LOGIC_SOURCES}
+    ${NEWGAME_SOURCES}
     # 如果有资源文件，取消注释并添加
     # resources.qrc
 )
@@ -51,6 +57,8 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     qt_add_executable(GomokuGUI
         MANUAL_FINALIZATION
         ${PROJECT_SOURCES}
+        newgamedialog.h newgamedialog.cpp newgamedialog.ui
+        playertype.h
     )
     # 如果有资源文件，取消注释并添加
     # qt_add_resources(GomokuGUI "resources"

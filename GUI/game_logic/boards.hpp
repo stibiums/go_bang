@@ -7,12 +7,9 @@
 #include <stack>
 #include <utility>
 #include <memory>
+#include "../playertype.h"
 
-enum PlayerType {
-    HumanVsAI,
-    HumanVsHuman,
-    AIvsAI
-};
+
 
 class AImove; // 前向声明
 
@@ -36,6 +33,13 @@ public:
 
 
     std::pair<int,int> aiInput();
+
+    // 设置玩家类型
+    void setPlayerType(int playerColor, PlayerType type); // playerColor: 1-黑棋, 2-白棋
+
+    // 获取玩家类型
+    PlayerType getPlayerType(int playerColor) const;
+
 
     // 下棋相关操作
     bool placePiece(int x, int y, int currentPlayer);
@@ -104,7 +108,8 @@ public:
 
 private:
 
-
+    PlayerType blackPlayerType; // 黑棋玩家类型
+    PlayerType whitePlayerType; // 白棋玩家类型
 
     // 撤销与重做栈
     std::stack<std::vector<std::vector<int>>> undoStack;

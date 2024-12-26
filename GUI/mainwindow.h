@@ -6,6 +6,8 @@
 #include "game_logic/boards.hpp"
 #include "BoardWidget.h"
 
+#include "NewGameDialog.h"
+
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
