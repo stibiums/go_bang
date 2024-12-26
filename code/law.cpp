@@ -413,11 +413,11 @@ bool checkForbiddenMove(const GomokuBoard& board, int x, int y)
         cout << "四四禁手！" << endl;
         return true;
     }
-    if (liveThreeCount >= 1 && liveFourCount >= 1) 
-    {
-        cout << "四三禁手！" << endl;
-        return true;
-    }
+    // if (liveThreeCount >= 1 && liveFourCount >= 1) 
+    // {
+    //     cout << "四三禁手！" << endl;
+    //     return true;
+    // }
 
     return false; // 没有禁手
 }
